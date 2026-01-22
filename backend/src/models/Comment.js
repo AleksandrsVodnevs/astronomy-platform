@@ -11,6 +11,10 @@ const Comment = sequelize.define('Comment', {
     type: DataTypes.STRING(500),
     allowNull: false,
   },
+  imageUrl: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
   postId: {
     type: DataTypes.INTEGER,
     allowNull: false,

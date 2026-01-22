@@ -1,0 +1,77 @@
+/* Real NASA texture Earth — scaled from solarsystemscope.com CodePen by @manz */
+/* Original: https://codepen.io/manz/pen/XbjxMR */
+
+.earth-container {
+  border-radius: 50%;
+  box-shadow: 2px -1px 10px 2px #5e90f1;
+  height: 300px;
+  width: 300px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.earth-night {
+  animation: earth-rotate-night 80s linear infinite;
+  background-image: url(https://www.solarsystemscope.com/textures/download/2k_earth_nightmap.jpg);
+  background-size: 200%;
+  height: 300px;
+  width: 300px;
+  position: absolute;
+  z-index: 2;
+}
+
+.earth-day {
+  animation: earth-rotate-day 80s linear infinite;
+  background-image: url(https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg);
+  background-size: 200%;
+  border-left: solid 1px black;
+  border-radius: 50%;
+  box-shadow: 2px 0 9px 4px #040615 inset;
+  height: 300px;
+  width: 300px;
+  margin-left: 66px;
+  position: absolute;
+  z-index: 3;
+}
+
+.earth-clouds {
+  animation: earth-rotate-day 50s linear infinite, earth-spin-clouds 100s ease infinite;
+  background-image: url(https://www.solarsystemscope.com/textures/download/2k_earth_clouds.jpg);
+  background-size: 200%;
+  border-radius: 50%;
+  box-shadow: 2px 0 9px 4px #040615 inset, -4px 0 9px 4px #5e90f1 inset;
+  height: 300px;
+  width: 300px;
+  margin-left: 60px;
+  opacity: 0.45;
+  position: absolute;
+  z-index: 4;
+}
+
+.earth-shadow {
+  background: transparent;
+  border-radius: 50%;
+  box-shadow: -2px 0 5px 1px #152b57 inset, 2px 0 5px 1px #040615 inset;
+  height: 300px;
+  width: 300px;
+  position: absolute;
+  z-index: 5;
+}
+
+@keyframes earth-rotate-day {
+  0%   { background-position: 120% 0; }
+  100% { background-position: -80% 0; }
+}
+
+@keyframes earth-rotate-night {
+  0%   { background-position: calc(120% + 72px) 0; }
+  100% { background-position: calc(-80% + 72px) 0; }
+}
+
+@keyframes earth-spin-clouds {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(20deg); }
+  100% { transform: rotate(0deg); }
+}

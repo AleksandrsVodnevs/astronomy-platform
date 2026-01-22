@@ -1,0 +1,2 @@
+.avatar-img { display: inline-block; flex-shrink: 0; }
+.avatar-initials { display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; user-select: none; }
