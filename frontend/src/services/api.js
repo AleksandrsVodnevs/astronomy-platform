@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:5000/api' });
+const API = axios.create({ 
+  baseURL: 'https://astronomy-platform.onrender.com/api'
+});
 
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -48,6 +50,6 @@ export const getUsers = () => API.get('/users');
 export const updateUserRole = (id, role) => API.put(`/users/${id}/role`, { role });
 export const updateUserStatus = (id, status) => API.put(`/users/${id}/status`, { status });
 
-export const AVATAR_BASE = 'http://localhost:5000';
+export const AVATAR_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 export default API;
