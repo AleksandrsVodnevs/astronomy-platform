@@ -1,19 +1,11 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendPasswordResetEmail = async (toEmail, resetToken, firstName) => {
   const resetUrl = `${process.env.FRONTEND_URL}/atjaunot-paroli/${resetToken}`;
-  await transporter.sendMail({
-    from: `"AstroLV platforma" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'AstroLV <onboarding@resend.dev>',
     to: toEmail,
     subject: 'Paroles atjaunošana — AstroLV',
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0a0e1a;color:#f1f5f9;padding:2rem;border-radius:12px;">
@@ -36,8 +28,8 @@ const sendVerificationCode = async (toEmail, code, type) => {
     ? 'Lai pabeigtu reģistrāciju, ievadiet zemāk norādīto kodu:'
     : 'Lai apstiprinātu e-pasta adreses maiņu, ievadiet zemāk norādīto kodu:';
 
-  await transporter.sendMail({
-    from: `"AstroLV platforma" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'AstroLV <onboarding@resend.dev>',
     to: toEmail,
     subject,
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0a0e1a;color:#f1f5f9;padding:2rem;border-radius:12px;">
@@ -49,7 +41,7 @@ const sendVerificationCode = async (toEmail, code, type) => {
           <span style="font-size:2.5rem;font-weight:900;letter-spacing:0.5rem;color:#4f8ef7;">${code}</span>
         </div>
       </div>
-      <p style="color:#94a3b8;font-size:0.85rem;text-align:center;">Kods derīgs 15 minūtes. Ja tu nepieprasīji šo kodu, ignorē šo e-pastu.</p>
+      <p style="color:#94a3b8;font-size:0.85rem;text-align:center;">Kods derīgs 15 minūtes.</p>
     </div>`,
   });
 };
