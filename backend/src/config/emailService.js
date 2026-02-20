@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendPasswordResetEmail = async (toEmail, resetToken, firstName) => {
   const resetUrl = `${process.env.FRONTEND_URL}/atjaunot-paroli/${resetToken}`;
   await resend.emails.send({
-    from: 'AstroLV <onboarding@resend.dev>',
+    from: 'AstroLV <noreply@astrolv.com>',
     to: toEmail,
     subject: 'Paroles atjaunošana — AstroLV',
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0a0e1a;color:#f1f5f9;padding:2rem;border-radius:12px;">
@@ -29,7 +29,7 @@ const sendVerificationCode = async (toEmail, code, type) => {
     : 'Lai apstiprinātu e-pasta adreses maiņu, ievadiet zemāk norādīto kodu:';
 
   await resend.emails.send({
-    from: 'AstroLV <onboarding@resend.dev>',
+    from: 'AstroLV <noreply@astrolv.com>',
     to: toEmail,
     subject,
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0a0e1a;color:#f1f5f9;padding:2rem;border-radius:12px;">
