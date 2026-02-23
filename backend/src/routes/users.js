@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Post = require('../models/Post');
@@ -32,27 +30,17 @@ router.put('/me', authenticate, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Servera kļūda' }); }
 });
 
-// Step 1: request email change — sends code to NEW email
 router.post('/me/email/request', authenticate, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: 'E-pasts un parole ir obligāti' });
     const user = await User.findByPk(req.user.id);
-
-    // Check password
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(400).json({ message: 'Nepareiza parole' });
-
-    // Check not same email
     if (email === user.email) return res.status(400).json({ message: 'Jaunajam e-pastam jāatšķiras no pašreizējā' });
-
-    // Check not taken by someone else
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ message: 'Šis e-pasts jau tiek izmantots' });
-
-    // Delete old pending
     await EmailVerification.destroy({ where: { userId: user.id, type: 'email_change', used: false } });
-
     const code = generateCode();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await EmailVerification.create({ userId: user.id, email, code, type: 'email_change', expiresAt });
@@ -61,7 +49,6 @@ router.post('/me/email/request', authenticate, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Servera kļūda' }); }
 });
 
-// Step 2: confirm email change with code
 router.post('/me/email/confirm', authenticate, async (req, res) => {
   try {
     const { code } = req.body;
@@ -106,14 +93,22 @@ router.delete('/me', authenticate, async (req, res) => {
 router.post('/me/avatar', authenticate, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'Nav pievienots attēls' });
+    const cloudinary = require('cloudinary').v2;
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'avatars', public_id: `avatar_${req.user.id}`, overwrite: true, resource_type: 'image' },
+        (error, result) => error ? reject(error) : resolve(result)
+      );
+      stream.end(req.file.buffer);
+    });
     const user = await User.findByPk(req.user.id);
-    if (user.avatar) {
-      const oldPath = path.join(__dirname, '../../uploads/avatars', path.basename(user.avatar));
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    }
-    const avatarUrl = '/uploads/avatars/' + req.file.filename;
-    await user.update({ avatar: avatarUrl });
-    res.json({ avatar: avatarUrl });
+    await user.update({ avatar: result.secure_url });
+    res.json({ avatar: result.secure_url });
   } catch (err) { console.error(err); res.status(500).json({ message: 'Servera kļūda' }); }
 });
 
