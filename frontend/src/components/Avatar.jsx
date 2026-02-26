@@ -11,7 +11,7 @@ const Avatar = ({ user, size = 40, onClick }) => {
   if (user?.avatar) {
     return (
       <img
-        src={`${AVATAR_BASE}${user.avatar}`}
+        src={user.avatar.startsWith('http') ? user.avatar : `${AVATAR_BASE}${user.avatar}`}
         alt={initials}
         className="avatar-img"
         style={{ ...style, borderRadius: '50%', objectFit: 'cover' }}
