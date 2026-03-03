@@ -1,7 +1,27 @@
 .legal-page {
-  padding-top: 2.5rem;
+  padding-top: 2rem;
   padding-bottom: 4rem;
   max-width: 780px;
+}
+
+.legal-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1.8rem;
+  font-family: inherit;
+  transition: color 0.15s ease;
+}
+
+.legal-back:hover {
+  color: var(--text-secondary);
 }
 
 .legal-page h1 {

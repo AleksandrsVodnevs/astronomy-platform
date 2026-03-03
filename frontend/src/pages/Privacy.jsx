@@ -1,11 +1,17 @@
+import { useNavigate } from 'react-router-dom';
 import { useLang } from '../context/LanguageContext';
 import './Legal.css';
 
 const Privacy = () => {
   const { lang } = useLang();
+  const navigate = useNavigate();
 
   return (
     <div className="container legal-page">
+      <button className="legal-back" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        {lang === 'en' ? 'Back' : 'Atpakaļ'}
+      </button>
       {lang === 'en' ? (
         <>
           <h1>Privacy Policy</h1>

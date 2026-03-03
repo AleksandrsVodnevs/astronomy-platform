@@ -69,8 +69,8 @@ const Home = () => {
             <h3>{t('popularPosts')}</h3>
             {posts.length === 0 ? <div className="empty-state">{t('noPosts')}</div> : (
               <ul className="popular-list">
-                {posts.map((post) => (
-                  <li key={post.id}><Link to={`/forums/${post.id}`}><span className="popular-dot"></span>{post.title}</Link></li>
+                {posts.map((post, idx) => (
+                  <li key={post.id}><Link to={`/forums/${post.id}`}><span className="popular-num">{idx + 1}</span>{post.title}</Link></li>
                 ))}
               </ul>
             )}

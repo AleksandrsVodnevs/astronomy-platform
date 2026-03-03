@@ -54,8 +54,10 @@ const Materials = () => {
         <div className="card" style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '1rem' }}>{t('noMaterials')}</div>
       ) : (
         <div className="mat-grid">
-          {filtered.map((m) => (
-            <Link to={`/materiali/${m.id}`} key={m.id} className="mat-card">
+          {filtered.map((m) => {
+            const diffClass = m.difficulty === 'Iesācējs' ? 'mat-beginner' : m.difficulty === 'Vidējs' ? 'mat-intermediate' : 'mat-advanced';
+            return (
+            <Link to={`/materiali/${m.id}`} key={m.id} className={`mat-card ${diffClass}`}>
               <div className="mat-card-top">
                 <span className="mat-category-label">{CATEGORY_LABEL[m.category]?.[lang] || m.category}</span>
                 <span className="mat-difficulty" style={{ color: difficultyColor[m.difficulty] }}>
@@ -66,7 +68,8 @@ const Materials = () => {
               <p>{m.content.substring(0, 140)}...</p>
               <span className="mat-read-more">{t('readMore')}</span>
             </Link>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>
