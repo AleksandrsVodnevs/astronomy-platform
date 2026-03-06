@@ -270,10 +270,15 @@ export const LanguageProvider = ({ children }) => {
     localStorage.setItem('lang', next);
   };
 
+  const changeLang = (code) => {
+    setLang(code);
+    localStorage.setItem('lang', code);
+  };
+
   const t = (key) => translations[lang][key] || key;
 
   return (
-    <LanguageContext.Provider value={{ lang, toggleLang, t }}>
+    <LanguageContext.Provider value={{ lang, toggleLang, changeLang, t }}>
       {children}
     </LanguageContext.Provider>
   );

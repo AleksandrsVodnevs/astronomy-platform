@@ -12,5 +12,35 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+          { pageLanguage: 'lv', includedLanguages: 'en,lv,ru,de,fr', layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL, autoDisplay: false },
+          'google_translate_element'
+        );
+      }
+
+      (function suppressTranslateBanner() {
+        function nuke() {
+          // Remove inline top/marginTop Google sets on body
+          document.body.style.removeProperty('top');
+          document.body.style.removeProperty('margin-top');
+          // Hide every iframe/element Google injects for the banner
+          document.querySelectorAll(
+            'iframe.skiptranslate, .goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt'
+          ).forEach(function(el) {
+            el.style.setProperty('display', 'none', 'important');
+            el.style.setProperty('height', '0', 'important');
+          });
+        }
+        // Watch for Google adding nodes to <body> AND changing body's style
+        new MutationObserver(nuke).observe(document.body, {
+          childList: true,
+          attributes: true,
+          attributeFilter: ['style', 'class']
+        });
+      })();
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async defer></script>
   </body>
 </html>

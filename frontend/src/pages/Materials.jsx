@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMaterials } from '../services/api';
 import { useLang } from '../context/LanguageContext';
+import { stripMarkdown } from '../utils/stripMarkdown';
 import './Materials.css';
 
 const CATEGORIES = ['Astronomija', 'Astrofotogrāfija'];
@@ -65,7 +66,7 @@ const Materials = () => {
                 </span>
               </div>
               <h2>{m.title}</h2>
-              <p>{m.content.substring(0, 140)}...</p>
+              <p>{stripMarkdown(m.content).substring(0, 140)}...</p>
               <span className="mat-read-more">{t('readMore')}</span>
             </Link>
           );

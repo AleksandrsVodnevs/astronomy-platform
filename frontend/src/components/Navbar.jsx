@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
@@ -6,9 +6,90 @@ import BlackHoleLogo from './BlackHoleLogo';
 import Avatar from './Avatar';
 import './Navbar.css';
 
+const LANGS = [
+  { code: 'lv', label: 'LV', name: 'Latviešu', native: true },
+  { code: 'en', label: 'EN', name: 'English',  native: true },
+  { code: 'ru', label: 'RU', name: 'Русский',  native: false },
+  { code: 'de', label: 'DE', name: 'Deutsch',   native: false },
+  { code: 'fr', label: 'FR', name: 'Français',  native: false },
+];
+
+const TranslateDropdown = () => {
+  const { changeLang } = useLang();
+  const [open, setOpen] = useState(false);
+  // Initialise directly from localStorage — no dependency on context lang variable
+  const [activeLang, setActiveLang] = useState(
+    () => localStorage.getItem('lang') || 'lv'
+  );
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, []);
+
+  const handleSelect = (code, isNative) => {
+    setActiveLang(code);
+    setOpen(false);
+
+    if (isNative) {
+      changeLang(code);
+      // Check the actual DOM combo to know if Google Translate was running —
+      // avoids any stale-closure issue with state-derived checks.
+      const combo = document.querySelector('.goog-te-combo');
+      const gtWasActive = combo && combo.value && combo.value !== '';
+      if (gtWasActive) {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
+        window.location.reload();
+      }
+      return;
+    }
+
+    // RU / DE / FR — always reset React to LV base, then drive Google Translate
+    changeLang('lv');
+    const combo = document.querySelector('.goog-te-combo');
+    if (combo) {
+      combo.value = code;
+      combo.dispatchEvent(new Event('change'));
+    }
+  };
+
+  const current = LANGS.find(l => l.code === activeLang) || LANGS[0];
+
+  return (
+    <div className="translate-wrap" ref={wrapRef}>
+      <button className="translate-btn" onClick={() => setOpen(o => !o)}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        {current.label}
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="translate-dropdown">
+          {LANGS.map(l => (
+            <button key={l.code} onClick={() => handleSelect(l.code, l.native)} className={`td-item${activeLang === l.code ? ' active' : ''}`}>
+              <span className="td-code">{l.label}</span>
+              <span className="td-name">{l.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Navbar = () => {
   const { user, logoutUser } = useAuth();
-  const { lang, toggleLang, t } = useLang();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -21,6 +102,8 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
+      {/* Hidden Google Translate init — powers the combo select used by TranslateDropdown */}
+      <div id="google_translate_element" style={{ position: 'absolute', left: '-9999px', top: 0, width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }} />
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
           <BlackHoleLogo size={28} />
@@ -38,9 +121,7 @@ const Navbar = () => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </button>
         </form>
-        <button className="lang-toggle" onClick={toggleLang}>
-          {lang === 'lv' ? 'LV' : 'EN'}
-        </button>
+        <TranslateDropdown />
         <div className="navbar-auth">
           {user ? (
             <div className="navbar-user">
@@ -80,7 +161,6 @@ const Navbar = () => {
               <Link to="/registreties" onClick={() => setMenuOpen(false)}>{t('register')}</Link>
             </>
           )}
-          <button onClick={toggleLang} className="mobile-lang-btn">{lang === 'lv' ? 'Switch to EN' : 'Pārslēgt uz LV'}</button>
         </div>
       )}
     </nav>
