@@ -1,137 +1,189 @@
-.mat-tabs {
-  display: flex;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+.mat-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
 }
 
-.mat-tab {
-  padding: 0.38rem 1rem;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-  font-family: inherit;
-}
+/* ---- Filter bar ---- */
 
-.mat-tab:hover {
-  border-color: var(--border-light);
-  color: var(--text-secondary);
-}
-
-.mat-tab.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-}
-
-.mat-difficulty-filter {
+.mat-filters {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.mat-filter-group {
+  display: flex;
+  gap: 0.35rem;
   flex-wrap: wrap;
 }
 
-.diff-btn {
-  padding: 0.24rem 0.7rem;
-  border-radius: 4px;
+.mat-filter-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border-light);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.mat-pill {
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.79rem;
   font-weight: 500;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
-.diff-btn:hover {
+.mat-pill:hover {
   border-color: var(--border-light);
   color: var(--text-secondary);
 }
 
-.diff-btn.active {
-  color: white;
+.mat-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
+
+/* ---- Materials grid ---- */
 
 .mat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.3rem;
 }
 
 .mat-card {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  background: linear-gradient(160deg, #141f2f 0%, #0f1722 100%);
-  border: 1px solid var(--border);
-  border-top: 3px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 1.3rem 1.4rem;
+  background: #0d1525;
+  border-radius: 12px;
+  overflow: hidden;
   text-decoration: none;
-  transition: border-color 0.15s ease, border-top-color 0.15s ease, box-shadow 0.18s ease, transform 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .mat-card:hover {
-  border-color: var(--border-light);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 0 0 1px rgba(79, 142, 247, 0.15), 0 16px 44px rgba(0, 0, 0, 0.52);
 }
 
-.mat-beginner { border-top-color: rgba(16, 185, 129, 0.6); }
-.mat-intermediate { border-top-color: rgba(245, 158, 11, 0.6); }
-.mat-advanced { border-top-color: rgba(239, 68, 68, 0.6); }
-.mat-beginner:hover { border-top-color: rgba(16, 185, 129, 0.9); }
-.mat-intermediate:hover { border-top-color: rgba(245, 158, 11, 0.9); }
-.mat-advanced:hover { border-top-color: rgba(239, 68, 68, 0.9); }
+/* ---- Cover area ---- */
 
-.mat-card-top {
+.mat-cover {
+  position: relative;
+  height: 148px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* The actual image/gradient — this element scales on hover */
+.mat-cover-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.48s ease;
+}
+
+.mat-card:hover .mat-cover-img {
+  transform: scale(1.07);
+}
+
+/* Semi-transparent overlay on top of a real photo */
+.mat-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.52) 100%);
+}
+
+/* Badges sit at bottom of cover, not scaled */
+.mat-cover-badges {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.85rem;
+  right: 0.85rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
-.mat-category-label {
-  font-size: 0.68rem;
-  color: var(--accent);
-  font-weight: 600;
-  background: rgba(79, 142, 247, 0.1);
-  padding: 0.1rem 0.5rem;
-  border-radius: 4px;
+.mat-cat-badge {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.18rem 0.58rem;
+  border-radius: 20px;
 }
 
-.mat-difficulty {
-  font-size: 0.72rem;
-  font-weight: 600;
+.mat-diff-badge {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   margin-left: auto;
-  letter-spacing: 0.01em;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.18rem 0.58rem;
+  border-radius: 20px;
 }
 
-.mat-card h2 {
-  font-size: 0.95rem;
-  font-weight: 600;
+/* ---- Card body ---- */
+
+.mat-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.1rem 1.2rem 1.25rem;
+  flex: 1;
+}
+
+.mat-card-title {
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.45;
-  letter-spacing: -0.01em;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
 }
 
-.mat-card p {
-  font-size: 0.84rem;
+.mat-card-excerpt {
+  font-size: 0.83rem;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.62;
   flex: 1;
 }
 
 .mat-read-more {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.mat-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 1rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .mat-grid { grid-template-columns: 1fr; }
+  .mat-filter-sep { display: none; }
+  .mat-filters { gap: 0.4rem; }
 }

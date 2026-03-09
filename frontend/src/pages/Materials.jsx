@@ -9,7 +9,15 @@ const CATEGORIES = ['Astronomija', 'Astrofotogrāfija'];
 const DIFFICULTIES_LV = ['Iesācējs', 'Vidējs', 'Pieredzējis'];
 const DIFFICULTY_MAP = { 'Iesācējs': 'Beginner', 'Vidējs': 'Intermediate', 'Pieredzējis': 'Advanced' };
 const difficultyColor = { 'Iesācējs': '#10b981', 'Vidējs': '#f59e0b', 'Pieredzējis': '#ef4444' };
-const CATEGORY_LABEL = { 'Astronomija': { lv: 'Astronomija', en: 'Astronomy' }, 'Astrofotogrāfija': { lv: 'Astrofotogrāfija', en: 'Astrophotography' } };
+const difficultyGradient = {
+  'Iesācējs':   'linear-gradient(135deg, #052e1c 0%, #064e3b 100%)',
+  'Vidējs':     'linear-gradient(135deg, #431407 0%, #78350f 100%)',
+  'Pieredzējis':'linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%)',
+};
+const CATEGORY_LABEL = {
+  'Astronomija':     { lv: 'Astronomija',     en: 'Astronomy' },
+  'Astrofotogrāfija':{ lv: 'Astrofotogrāfija', en: 'Astrophotography' },
+};
 
 const Materials = () => {
   const { t, lang } = useLang();
@@ -29,48 +37,71 @@ const Materials = () => {
   if (loading) return <div className="loading">{t('loading')}</div>;
 
   return (
-    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
-      <div className="page-header"><h1>{t('materialsTitle')}</h1><p>{t('materialsSubtitle')}</p></div>
-
-      <div className="mat-tabs">
-        <button className={`mat-tab ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => setActiveCategory('all')}>{t('allMaterials')}</button>
-        {CATEGORIES.map((cat) => (
-          <button key={cat} className={`mat-tab ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-            {CATEGORY_LABEL[cat][lang] || cat}
-          </button>
-        ))}
+    <div className="container mat-page">
+      <div className="page-header">
+        <h1>{t('materialsTitle')}</h1>
+        <p>{t('materialsSubtitle')}</p>
       </div>
 
-      <div className="mat-difficulty-filter">
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{t('difficulty')}:</span>
-        <button className={`diff-btn ${activeDifficulty === 'all' ? 'active' : ''}`} onClick={() => setActiveDifficulty('all')}>{t('allMaterials')}</button>
-        {DIFFICULTIES_LV.map((d) => (
-          <button key={d} className={`diff-btn ${activeDifficulty === d ? 'active' : ''}`}
-            style={activeDifficulty === d ? { background: difficultyColor[d], borderColor: difficultyColor[d], color: 'white' } : {}}
-            onClick={() => setActiveDifficulty(d)}>{lang === 'en' ? DIFFICULTY_MAP[d] : d}</button>
-        ))}
+      <div className="mat-filters">
+        <div className="mat-filter-group">
+          <button className={`mat-pill ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => setActiveCategory('all')}>
+            {t('allMaterials')}
+          </button>
+          {CATEGORIES.map((cat) => (
+            <button key={cat} className={`mat-pill ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
+              {CATEGORY_LABEL[cat][lang] || cat}
+            </button>
+          ))}
+        </div>
+        <div className="mat-filter-sep" />
+        <div className="mat-filter-group">
+          <button className={`mat-pill ${activeDifficulty === 'all' ? 'active' : ''}`} onClick={() => setActiveDifficulty('all')}>
+            {lang === 'en' ? 'All levels' : 'Visi līmeņi'}
+          </button>
+          {DIFFICULTIES_LV.map((d) => (
+            <button
+              key={d}
+              className={`mat-pill ${activeDifficulty === d ? 'active' : ''}`}
+              style={activeDifficulty === d ? { background: difficultyColor[d], borderColor: difficultyColor[d], color: '#fff' } : {}}
+              onClick={() => setActiveDifficulty(d)}
+            >
+              {lang === 'en' ? DIFFICULTY_MAP[d] : d}
+            </button>
+          ))}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '1rem' }}>{t('noMaterials')}</div>
+        <div className="mat-empty">{t('noMaterials')}</div>
       ) : (
         <div className="mat-grid">
-          {filtered.map((m) => {
-            const diffClass = m.difficulty === 'Iesācējs' ? 'mat-beginner' : m.difficulty === 'Vidējs' ? 'mat-intermediate' : 'mat-advanced';
-            return (
-            <Link to={`/materiali/${m.id}`} key={m.id} className={`mat-card ${diffClass}`}>
-              <div className="mat-card-top">
-                <span className="mat-category-label">{CATEGORY_LABEL[m.category]?.[lang] || m.category}</span>
-                <span className="mat-difficulty" style={{ color: difficultyColor[m.difficulty] }}>
-                  {lang === 'en' ? DIFFICULTY_MAP[m.difficulty] : m.difficulty}
-                </span>
+          {filtered.map((m) => (
+            <Link to={`/materiali/${m.id}`} key={m.id} className="mat-card">
+              <div className="mat-cover">
+                <div
+                  className="mat-cover-img"
+                  style={m.imageUrl
+                    ? { backgroundImage: `url(${m.imageUrl})` }
+                    : { background: difficultyGradient[m.difficulty] || difficultyGradient['Iesācējs'] }}
+                />
+                {m.imageUrl && <div className="mat-cover-overlay" />}
+                <div className="mat-cover-badges">
+                  <span className="mat-cat-badge">
+                    {CATEGORY_LABEL[m.category]?.[lang] || m.category}
+                  </span>
+                  <span className="mat-diff-badge" style={{ color: difficultyColor[m.difficulty] }}>
+                    {lang === 'en' ? DIFFICULTY_MAP[m.difficulty] : m.difficulty}
+                  </span>
+                </div>
               </div>
-              <h2>{m.title}</h2>
-              <p>{stripMarkdown(m.content).substring(0, 140)}...</p>
-              <span className="mat-read-more">{t('readMore')}</span>
+              <div className="mat-card-body">
+                <h2 className="mat-card-title">{m.title}</h2>
+                <p className="mat-card-excerpt">{stripMarkdown(m.content).substring(0, 120)}...</p>
+                <span className="mat-read-more">{t('readMore')}</span>
+              </div>
             </Link>
-          );
-          })}
+          ))}
         </div>
       )}
     </div>
