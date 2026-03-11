@@ -17,9 +17,11 @@ const LANGS = [
 const TranslateDropdown = () => {
   const { changeLang } = useLang();
   const [open, setOpen] = useState(false);
-  // Initialise directly from localStorage — no dependency on context lang variable
+  // Use a dedicated localStorage key as the source of truth for the active GT language.
+  // Cookies can have domain/path issues that prevent reliable deletion before reload;
+  // localStorage.removeItem is always synchronous and guaranteed to work.
   const [activeLang, setActiveLang] = useState(
-    () => localStorage.getItem('lang') || 'lv'
+    () => localStorage.getItem('gt-lang') || localStorage.getItem('lang') || 'lv'
   );
   const wrapRef = useRef(null);
 
@@ -31,31 +33,33 @@ const TranslateDropdown = () => {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
 
+  const clearGtCookie = () => {
+    const exp = 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    document.cookie = `googtrans=; ${exp}`;
+    document.cookie = `googtrans=; ${exp}; domain=${location.hostname}`;
+  };
+
   const handleSelect = (code, isNative) => {
     setActiveLang(code);
     setOpen(false);
 
     if (isNative) {
+      const wasGtActive = !!localStorage.getItem('gt-lang');
+      localStorage.removeItem('gt-lang');
+      clearGtCookie();
       changeLang(code);
-      // Check the actual DOM combo to know if Google Translate was running —
-      // avoids any stale-closure issue with state-derived checks.
-      const combo = document.querySelector('.goog-te-combo');
-      const gtWasActive = combo && combo.value && combo.value !== '';
-      if (gtWasActive) {
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
-        window.location.reload();
-      }
+      if (wasGtActive) window.location.reload();
       return;
     }
 
-    // RU / DE / FR — always reset React to LV base, then drive Google Translate
+    // RU / DE / FR — persist target in localStorage so the button label survives
+    // the reload, then set the googtrans cookie and reload.
+    localStorage.setItem('gt-lang', code);
     changeLang('lv');
-    const combo = document.querySelector('.goog-te-combo');
-    if (combo) {
-      combo.value = code;
-      combo.dispatchEvent(new Event('change'));
-    }
+    clearGtCookie();
+    document.cookie = `googtrans=/lv/${code}; path=/`;
+    document.cookie = `googtrans=/lv/${code}; path=/; domain=${location.hostname}`;
+    window.location.reload();
   };
 
   const current = LANGS.find(l => l.code === activeLang) || LANGS[0];
