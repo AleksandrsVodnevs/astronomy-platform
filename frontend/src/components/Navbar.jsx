@@ -7,11 +7,11 @@ import Avatar from './Avatar';
 import './Navbar.css';
 
 const LANGS = [
-  { code: 'lv', label: 'LV', name: 'Latviešu', native: true },
-  { code: 'en', label: 'EN', name: 'English',  native: true },
-  { code: 'ru', label: 'RU', name: 'Русский',  native: false },
-  { code: 'de', label: 'DE', name: 'Deutsch',   native: false },
-  { code: 'fr', label: 'FR', name: 'Français',  native: false },
+  { code: 'lv', label: 'LV', name: 'Latviešu' },
+  { code: 'en', label: 'EN', name: 'English'  },
+  { code: 'ru', label: 'RU', name: 'Русский'  },
+  { code: 'de', label: 'DE', name: 'Deutsch'  },
+  { code: 'fr', label: 'FR', name: 'Français' },
 ];
 
 const TranslateDropdown = () => {
@@ -39,26 +39,18 @@ const TranslateDropdown = () => {
     document.cookie = `googtrans=; ${exp}; domain=${location.hostname}`;
   };
 
-  const handleSelect = (code, isNative) => {
+  const handleSelect = (code) => {
     setActiveLang(code);
     setOpen(false);
 
-    if (isNative) {
-      const wasGtActive = !!localStorage.getItem('gt-lang');
-      localStorage.removeItem('gt-lang');
-      clearGtCookie();
-      changeLang(code);
-      if (wasGtActive) window.location.reload();
-      return;
-    }
-
-    // RU / DE / FR — persist target in localStorage so the button label survives
-    // the reload, then set the googtrans cookie and reload.
+    // Every language goes through Google Translate with auto-detect source.
+    // /auto/<target> means Google detects whatever language the text is in
+    // (Latvian, English, mixed) and translates it to the chosen target.
     localStorage.setItem('gt-lang', code);
     changeLang('lv');
     clearGtCookie();
-    document.cookie = `googtrans=/lv/${code}; path=/`;
-    document.cookie = `googtrans=/lv/${code}; path=/; domain=${location.hostname}`;
+    document.cookie = `googtrans=/auto/${code}; path=/`;
+    document.cookie = `googtrans=/auto/${code}; path=/; domain=${location.hostname}`;
     window.location.reload();
   };
 
@@ -80,7 +72,7 @@ const TranslateDropdown = () => {
       {open && (
         <div className="translate-dropdown">
           {LANGS.map(l => (
-            <button key={l.code} onClick={() => handleSelect(l.code, l.native)} className={`td-item${activeLang === l.code ? ' active' : ''}`}>
+            <button key={l.code} onClick={() => handleSelect(l.code)} className={`td-item${activeLang === l.code ? ' active' : ''}`}>
               <span className="td-code">{l.label}</span>
               <span className="td-name">{l.name}</span>
             </button>
