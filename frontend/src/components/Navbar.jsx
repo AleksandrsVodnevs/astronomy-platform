@@ -43,14 +43,14 @@ const TranslateDropdown = () => {
     setActiveLang(code);
     setOpen(false);
 
-    // Every language goes through Google Translate with auto-detect source.
-    // /auto/<target> means Google detects whatever language the text is in
-    // (Latvian, English, mixed) and translates it to the chosen target.
     localStorage.setItem('gt-lang', code);
     changeLang('lv');
     clearGtCookie();
-    document.cookie = `googtrans=/auto/${code}; path=/`;
-    document.cookie = `googtrans=/auto/${code}; path=/; domain=${location.hostname}`;
+    // LV uses /auto/ source so it catches content written in other languages (e.g. English).
+    // All other targets use /lv/ source which is what the embedded widget supports reliably.
+    const src = code === 'lv' ? 'auto' : 'lv';
+    document.cookie = `googtrans=/${src}/${code}; path=/`;
+    document.cookie = `googtrans=/${src}/${code}; path=/; domain=${location.hostname}`;
     window.location.reload();
   };
 
