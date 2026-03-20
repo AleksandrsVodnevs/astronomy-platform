@@ -1,0 +1,298 @@
+.pd-page {
+  max-width: 800px;
+  padding-top: 2rem;
+  padding-bottom: 5rem;
+}
+
+/* ---- Back link ---- */
+
+.pd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
+  margin-bottom: 1.8rem;
+}
+
+.pd-back:hover {
+  color: var(--text-secondary);
+}
+
+/* ---- Post article ---- */
+
+.pd-post {
+  margin-bottom: 3rem;
+}
+
+.pd-post-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1.8rem;
+}
+
+.pd-author-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.pd-author-link:hover {
+  opacity: 0.85;
+}
+
+.pd-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pd-author-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.pd-author-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.pd-cat-badge {
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.7rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.pd-delete-btn {
+  margin-left: auto;
+}
+
+.pd-post-img {
+  width: 100%;
+  max-height: 460px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  margin-bottom: 2rem;
+}
+
+.pd-post-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
+}
+
+.pd-post-content {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.pd-post-footer {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pd-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ---- Comments section ---- */
+
+.pd-comments-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+}
+
+.pd-comments-heading h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.pd-comments-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+}
+
+/* ---- Comment form ---- */
+
+.pd-comment-form {
+  background: #0d1525;
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem 1rem;
+  margin-bottom: 2rem;
+}
+
+.pd-form-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.pd-form-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pd-comment-form .form-group input,
+.pd-comment-form .form-group textarea {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.pd-comment-form .form-group textarea:focus {
+  border-color: var(--accent);
+  background: rgba(79, 142, 247, 0.04);
+}
+
+.pd-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pd-char-count {
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-login-prompt {
+  background: #0d1525;
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+/* ---- Comments list ---- */
+
+.pd-no-comments {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  padding: 2.5rem 0;
+}
+
+.pd-comments-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pd-comment {
+  display: flex;
+  gap: 0.9rem;
+  padding: 1.15rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.pd-comment:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.pd-comment-avatar {
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+.pd-comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pd-comment-author {
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.pd-comment-author:hover {
+  color: var(--accent);
+}
+
+.pd-comment-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.pd-comment-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.pd-comment-delete:hover {
+  color: var(--error);
+}
+
+.pd-comment-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.pd-comment-img {
+  max-width: 100%;
+  max-height: 380px;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
+  margin-top: 0.8rem;
+}

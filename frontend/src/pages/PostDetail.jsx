@@ -7,6 +7,15 @@ import { timeAgo } from '../utils/timeAgo';
 import { translateCategory } from '../utils/categoryUtils';
 import Avatar from '../components/Avatar';
 import ImageUpload from '../components/ImageUpload';
+import './PostDetail.css';
+
+const CAT_COLORS = {
+  'Planētas':    '#4f8ef7',
+  'Galaktikas':  '#8b5cf6',
+  'Kosmoss':     '#06b6d4',
+  'Astrofizika': '#f59e0b',
+  'Novērojumi':  '#10b981',
+};
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -38,13 +47,9 @@ const PostDetail = () => {
     setSubmitting(true);
     try {
       await createComment({ content: comment, postId: parseInt(id), imageUrl: commentImage });
-      setComment('');
-      setCommentImage('');
-      setShowImageUpload(false);
-      setCommentError('');
+      setComment(''); setCommentImage(''); setShowImageUpload(false); setCommentError('');
       fetchPost();
-    }
-    catch (err) { setCommentError(err.response?.data?.message || 'Kļūda'); }
+    } catch (err) { setCommentError(err.response?.data?.message || 'Kļūda'); }
     finally { setSubmitting(false); }
   };
 
@@ -56,57 +61,78 @@ const PostDetail = () => {
   if (loading) return <div className="loading">{t('loading')}</div>;
   if (!post) return <div className="error">{lang === 'en' ? 'Post not found' : 'Ieraksts nav atrasts'}</div>;
 
+  const catColor = CAT_COLORS[post.category] || 'var(--accent)';
+  const commentCount = post.Comments?.length || 0;
+
   return (
-    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem', maxWidth: '800px' }}>
-      <Link to="/forums" style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>{t('backToForum')}</Link>
+    <div className="pd-page container">
 
-      <div className="card" style={{ marginTop: '1.2rem' }}>
-        {post.imageUrl && (
-          <div style={{ margin: '-1.5rem -1.5rem 1.5rem', borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
-            <img src={post.imageUrl} alt={post.title} style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }} />
-          </div>
-        )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ background: 'rgba(79,142,247,0.12)', color: 'var(--accent)', borderRadius: '20px', padding: '0.12rem 0.65rem', fontSize: '0.78rem', fontWeight: 600 }}>{translateCategory(post.category, lang)}</span>
-            <Link to={`/profils/${post.author?.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              <Avatar user={post.author} size={24} />
-              {post.author?.firstName} {post.author?.lastName}
-            </Link>
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{timeAgo(post.createdAt, lang)}</span>
-          </div>
+      {/* Back */}
+      <Link to="/forums" className="pd-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        {t('backToForum')}
+      </Link>
+
+      {/* Post */}
+      <article className="pd-post">
+        <header className="pd-post-header">
+          <Link to={`/profils/${post.author?.id}`} className="pd-author-link">
+            <Avatar user={post.author} size={36} />
+            <div className="pd-author-info">
+              <span className="pd-author-name">{post.author?.firstName} {post.author?.lastName}</span>
+              <span className="pd-author-time">{timeAgo(post.createdAt, lang)}</span>
+            </div>
+          </Link>
+          <span
+            className="pd-cat-badge"
+            style={{ background: `${catColor}1a`, color: catColor }}
+          >
+            {translateCategory(post.category, lang)}
+          </span>
           {(user?.id === post.authorId || user?.role === 'admin') && (
-            <button className="btn btn-danger btn-sm" onClick={handleDeletePost}>{t('delete')}</button>
+            <button className="btn btn-danger btn-sm pd-delete-btn" onClick={handleDeletePost}>{t('delete')}</button>
           )}
+        </header>
+
+        {post.imageUrl && (
+          <img src={post.imageUrl} alt={post.title} className="pd-post-img" />
+        )}
+
+        <h1 className="pd-post-title">{post.title}</h1>
+        <div className="pd-post-content">{post.content}</div>
+
+        <div className="pd-post-footer">
+          <span className="pd-stat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {commentCount} {lang === 'en' ? 'comments' : 'komentāri'}
+          </span>
         </div>
-        <h1 style={{ fontSize: '1.6rem', marginBottom: '1.2rem', lineHeight: '1.35' }}>{post.title}</h1>
-        <div style={{ color: 'var(--text-secondary)', lineHeight: '1.8', whiteSpace: 'pre-wrap', fontSize: '0.97rem' }}>{post.content}</div>
-      </div>
+      </article>
 
-      <div style={{ marginTop: '2rem' }}>
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '1.2rem', fontWeight: 600 }}>
-          {t('comments')} ({post.Comments?.length || 0})
-        </h2>
+      {/* Comments */}
+      <section className="pd-comments">
+        <div className="pd-comments-heading">
+          <h2>{t('comments')}</h2>
+          <span className="pd-comments-count">{commentCount}</span>
+        </div>
 
+        {/* Comment form */}
         {user ? (
-          <form onSubmit={handleAddComment} style={{ marginBottom: '1.5rem' }}>
-            <div className="form-group">
+          <form onSubmit={handleAddComment} className="pd-comment-form">
+            <div className="pd-form-header">
+              <Avatar user={user} size={30} />
+              <span className="pd-form-label">{lang === 'en' ? 'Write a comment…' : 'Rakstīt komentāru…'}</span>
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <textarea
                 placeholder={t('commentPlaceholder')}
                 value={comment}
                 onChange={(e) => { setComment(e.target.value); setCommentError(''); }}
                 rows={3}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem' }}>
-                {commentError && <span className="form-error">{commentError}</span>}
-                <span style={{ fontSize: '0.78rem', color: comment.length > 450 ? 'var(--warning)' : 'var(--text-muted)', marginLeft: 'auto' }}>
-                  {comment.length}/500
-                </span>
-              </div>
             </div>
-
             {showImageUpload && (
-              <div className="form-group">
+              <div className="form-group" style={{ marginTop: '0.7rem', marginBottom: 0 }}>
                 <ImageUpload
                   onUpload={setCommentImage}
                   currentImage={commentImage}
@@ -114,68 +140,66 @@ const PostDetail = () => {
                 />
               </div>
             )}
-
-            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
-                {submitting ? t('saving') : t('addComment')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => { setShowImageUpload(!showImageUpload); if (showImageUpload) setCommentImage(''); }}
-              >
-                {showImageUpload
-                  ? (lang === 'en' ? 'Remove image' : 'Noņemt attēlu')
-                  : (lang === 'en' ? '+ Add image' : '+ Pievienot attēlu')
-                }
-              </button>
+            <div className="pd-form-actions">
+              <span className="pd-char-count" style={{ color: comment.length > 450 ? 'var(--warning)' : 'var(--text-muted)' }}>
+                {comment.length}/500
+              </span>
+              {commentError && <span className="form-error" style={{ marginLeft: 0 }}>{commentError}</span>}
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => { setShowImageUpload(!showImageUpload); if (showImageUpload) setCommentImage(''); }}
+                >
+                  {showImageUpload ? (lang === 'en' ? 'Remove image' : 'Noņemt attēlu') : (lang === 'en' ? '+ Image' : '+ Attēls')}
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+                  {submitting ? t('saving') : t('addComment')}
+                </button>
+              </div>
             </div>
           </form>
         ) : (
-          <div className="card" style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <div className="pd-login-prompt">
             <Link to="/pieteikties">{t('login')}</Link>{' '}{t('loginToComment')}
           </div>
         )}
 
-        {post.Comments?.length === 0 ? (
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem', textAlign: 'center', padding: '1.5rem' }}>
-            {t('noCommentsYet')}
-          </div>
+        {/* Comments list */}
+        {commentCount === 0 ? (
+          <div className="pd-no-comments">{t('noCommentsYet')}</div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+          <div className="pd-comments-list">
             {post.Comments.map((c) => (
-              <div key={c.id} className="card" style={{ padding: '1rem 1.2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
-                  <Link to={`/profils/${c.author?.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
-                    <Avatar user={c.author} size={28} />
-                    <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{c.author?.firstName} {c.author?.lastName}</span>
-                  </Link>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{timeAgo(c.createdAt, lang)}</span>
+              <div key={c.id} className="pd-comment">
+                <div className="pd-comment-avatar">
+                  <Avatar user={c.author} size={32} />
+                </div>
+                <div className="pd-comment-body">
+                  <div className="pd-comment-header">
+                    <Link to={`/profils/${c.author?.id}`} className="pd-comment-author">
+                      {c.author?.firstName} {c.author?.lastName}
+                    </Link>
+                    <span className="pd-comment-time">{timeAgo(c.createdAt, lang)}</span>
                     {(user?.id === c.authorId || user?.role === 'admin') && (
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDeleteComment(c.id)} style={{ padding: '0.15rem 0.5rem', fontSize: '0.76rem' }}>
+                      <button
+                        className="pd-comment-delete"
+                        onClick={() => handleDeleteComment(c.id)}
+                      >
                         {t('delete')}
                       </button>
                     )}
                   </div>
+                  {c.content && <p className="pd-comment-text">{c.content}</p>}
+                  {c.imageUrl && (
+                    <img src={c.imageUrl} alt="attachment" className="pd-comment-img" />
+                  )}
                 </div>
-                {c.content && (
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: c.imageUrl ? '0.8rem' : 0 }}>
-                    {c.content}
-                  </p>
-                )}
-                {c.imageUrl && (
-                  <img
-                    src={c.imageUrl}
-                    alt="comment attachment"
-                    style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '8px', objectFit: 'contain', display: 'block' }}
-                  />
-                )}
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

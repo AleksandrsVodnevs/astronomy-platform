@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getUsers, updateUserRole, updateUserStatus, createNews, createMaterial } from '../services/api';
 import { useLang } from '../context/LanguageContext';
+import Avatar from '../components/Avatar';
 import ImageUpload from '../components/ImageUpload';
 import './Admin.css';
 
@@ -41,8 +42,7 @@ const Admin = () => {
       setNewsImage('');
       setNewsSuccess(t('published'));
       setNewsError('');
-    }
-    catch (err) { setNewsError(err.response?.data?.message || 'Kļūda'); }
+    } catch (err) { setNewsError(err.response?.data?.message || 'Kļūda'); }
     finally { setNewsLoading(false); }
   };
 
@@ -56,36 +56,97 @@ const Admin = () => {
       setMatImage('');
       setMatSuccess(t('materialAdded'));
       setMatError('');
-    }
-    catch (err) { setMatError(err.response?.data?.message || 'Kļūda'); }
+    } catch (err) { setMatError(err.response?.data?.message || 'Kļūda'); }
     finally { setMatLoading(false); }
   };
 
   const formatDate = (d) => new Date(d).toLocaleDateString(lang === 'en' ? 'en-GB' : 'lv-LV');
 
+  const TABS = [
+    { key: 'users',     label: `${t('usersTab')} (${users.length})` },
+    { key: 'news',      label: t('newsTab') },
+    { key: 'materials', label: t('materialsTab') },
+  ];
+
   return (
-    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
-      <div className="page-header"><h1>{t('adminTitle')}</h1><p>{t('adminSubtitle')}</p></div>
-      <div className="admin-tabs">
-        <button className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>{t('usersTab')} ({users.length})</button>
-        <button className={`admin-tab ${activeTab === 'news' ? 'active' : ''}`} onClick={() => setActiveTab('news')}>{t('newsTab')}</button>
-        <button className={`admin-tab ${activeTab === 'materials' ? 'active' : ''}`} onClick={() => setActiveTab('materials')}>{t('materialsTab')}</button>
+    <div className="adm-page container">
+
+      {/* Page header */}
+      <div className="adm-header">
+        <div>
+          <h1 className="adm-title">{t('adminTitle')}</h1>
+          <p className="adm-subtitle">{t('adminSubtitle')}</p>
+        </div>
       </div>
 
+      {/* Tab nav */}
+      <div className="adm-tabs">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            className={`adm-tab${activeTab === tab.key ? ' active' : ''}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ---- Users ---- */}
       {activeTab === 'users' && (
-        <div className="admin-section">
+        <div className="adm-section">
           {loading ? <div className="loading">{t('loading')}</div> : (
-            <div className="users-table-wrap">
-              <table className="users-table">
-                <thead><tr><th>{lang === 'en' ? 'Name' : 'Vārds Uzvārds'}</th><th>{lang === 'en' ? 'Email' : 'E-pasts'}</th><th>{t('registeredAt')}</th><th>{t('role')}</th><th>{t('status')}</th></tr></thead>
+            <div className="adm-table-wrap">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>{lang === 'en' ? 'User' : 'Lietotājs'}</th>
+                    <th>{lang === 'en' ? 'Email' : 'E-pasts'}</th>
+                    <th>{t('registeredAt')}</th>
+                    <th>{t('role')}</th>
+                    <th>{t('status')}</th>
+                    <th>{lang === 'en' ? 'Actions' : 'Darbības'}</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {users.map((u) => (
                     <tr key={u.id}>
-                      <td>{u.firstName} {u.lastName}</td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>{u.email}</td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{formatDate(u.createdAt)}</td>
-                      <td><select value={u.role} onChange={(e) => handleRoleChange(u.id, e.target.value)} className="admin-select"><option value="user">{t('roleUser')}</option><option value="admin">{t('roleAdmin')}</option></select></td>
-                      <td><button className={`btn btn-sm ${u.status === 'active' ? 'btn-danger' : 'btn-primary'}`} onClick={() => handleStatusChange(u.id, u.status === 'active' ? 'blocked' : 'active')}>{u.status === 'active' ? t('block') : t('unblock')}</button></td>
+                      <td>
+                        <div className="adm-user-cell">
+                          <Avatar user={u} size={30} />
+                          <span className="adm-user-name">{u.firstName} {u.lastName}</span>
+                        </div>
+                      </td>
+                      <td className="adm-muted">{u.email}</td>
+                      <td className="adm-muted">{formatDate(u.createdAt)}</td>
+                      <td>
+                        <span className={`adm-role-badge adm-role-${u.role}`}>
+                          {u.role === 'admin' ? t('roleAdmin') : t('roleUser')}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`adm-status-badge adm-status-${u.status}`}>
+                          {u.status === 'active' ? (lang === 'en' ? 'Active' : 'Aktīvs') : (lang === 'en' ? 'Blocked' : 'Bloķēts')}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="adm-actions">
+                          <select
+                            value={u.role}
+                            onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                            className="adm-select"
+                          >
+                            <option value="user">{t('roleUser')}</option>
+                            <option value="admin">{t('roleAdmin')}</option>
+                          </select>
+                          <button
+                            className={`adm-action-btn ${u.status === 'active' ? 'danger' : 'primary'}`}
+                            onClick={() => handleStatusChange(u.id, u.status === 'active' ? 'blocked' : 'active')}
+                          >
+                            {u.status === 'active' ? t('block') : t('unblock')}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -95,39 +156,88 @@ const Admin = () => {
         </div>
       )}
 
+      {/* ---- News form ---- */}
       {activeTab === 'news' && (
-        <div className="admin-section">
-          <div className="card" style={{ maxWidth: '740px' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.3rem' }}>{t('publishNews')}</h2>
-            <form onSubmit={handleNewsSubmit}>
-              <div className="form-group"><label>{t('title')}</label><input type="text" placeholder={lang === 'en' ? 'Article title' : 'Ziņas virsraksts'} value={newsForm.title} onChange={(e) => { setNewsForm({ ...newsForm, title: e.target.value }); setNewsSuccess(''); }} required /></div>
-              <div className="form-group"><label>{t('content')}</label><textarea placeholder={lang === 'en' ? 'Article content...' : 'Ziņas teksts...'} value={newsForm.content} onChange={(e) => { setNewsForm({ ...newsForm, content: e.target.value }); setNewsSuccess(''); }} rows={6} required /></div>
-              <div className="form-group"><label>{t('sourceUrl')}</label><input type="url" placeholder="https://example.com" value={newsForm.sourceUrl} onChange={(e) => setNewsForm({ ...newsForm, sourceUrl: e.target.value })} /></div>
-              <div className="form-group">
-                <label>{lang === 'en' ? 'Cover image' : 'Vāka attēls'}</label>
-                <ImageUpload onUpload={setNewsImage} currentImage={newsImage} label={lang === 'en' ? 'Add cover image (optional)' : 'Pievienot vāka attēlu (neobligāts)'} />
+        <div className="adm-section">
+          <div className="adm-form-wrap">
+            <div className="adm-form-title">
+              <h2>{t('publishNews')}</h2>
+              <p>{lang === 'en' ? 'Published articles appear on the news page immediately.' : 'Publicētie raksti nekavējoties parādās ziņu lapā.'}</p>
+            </div>
+            <form onSubmit={handleNewsSubmit} className="adm-form">
+              <div className="adm-form-row">
+                <div className="form-group">
+                  <label>{t('title')}</label>
+                  <input
+                    type="text"
+                    placeholder={lang === 'en' ? 'Article title' : 'Ziņas virsraksts'}
+                    value={newsForm.title}
+                    onChange={(e) => { setNewsForm({ ...newsForm, title: e.target.value }); setNewsSuccess(''); }}
+                    required
+                  />
+                </div>
               </div>
-              {newsSuccess && <div style={{ color: 'var(--success)', fontSize: '0.88rem', marginBottom: '0.8rem' }}>{newsSuccess}</div>}
-              {newsError && <div className="form-error">{newsError}</div>}
-              <button type="submit" className="btn btn-primary" disabled={newsLoading}>{newsLoading ? t('publishing') : t('publish')}</button>
+              <div className="form-group">
+                <label>{t('content')}</label>
+                <textarea
+                  placeholder={lang === 'en' ? 'Article content...' : 'Ziņas teksts...'}
+                  value={newsForm.content}
+                  onChange={(e) => { setNewsForm({ ...newsForm, content: e.target.value }); setNewsSuccess(''); }}
+                  rows={8}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>{t('sourceUrl')} <span className="adm-optional">{lang === 'en' ? '(optional)' : '(neobligāts)'}</span></label>
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={newsForm.sourceUrl}
+                  onChange={(e) => setNewsForm({ ...newsForm, sourceUrl: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>{lang === 'en' ? 'Cover image' : 'Vāka attēls'} <span className="adm-optional">{lang === 'en' ? '(optional)' : '(neobligāts)'}</span></label>
+                <ImageUpload onUpload={setNewsImage} currentImage={newsImage} label={lang === 'en' ? 'Upload cover image' : 'Augšupielādēt vāka attēlu'} />
+              </div>
+              <div className="adm-form-footer">
+                {newsSuccess && <span className="adm-success">{newsSuccess}</span>}
+                {newsError && <span className="form-error">{newsError}</span>}
+                <button type="submit" className="btn btn-primary" disabled={newsLoading}>
+                  {newsLoading ? t('publishing') : t('publish')}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
+      {/* ---- Materials form ---- */}
       {activeTab === 'materials' && (
-        <div className="admin-section">
-          <div className="card" style={{ maxWidth: '740px' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.3rem' }}>{t('publishMaterial')}</h2>
-            <div className="admin-md-hint">
+        <div className="adm-section">
+          <div className="adm-form-wrap">
+            <div className="adm-form-title">
+              <h2>{t('publishMaterial')}</h2>
+              <p>{lang === 'en' ? 'Educational materials support Markdown formatting.' : 'Izglītojošie materiāli atbalsta Markdown formatēšanu.'}</p>
+            </div>
+            <div className="adm-md-hint">
               {lang === 'en'
-                ? 'Content supports Markdown — use ## headings, **bold**, *italic*, - lists, > quotes, `code`'
-                : 'Saturs atbalsta Markdown — izmantojiet ## virsrakstus, **treknrakstu**, *slīprakstu**, - sarakstus, > citātus, `kodu`'
+                ? '## Heading  ·  **bold**  ·  *italic*  ·  - list item  ·  > quote  ·  `code`'
+                : '## Virsraksts  ·  **treknraksts**  ·  *slīpraksts*  ·  - saraksts  ·  > citāts  ·  `kods`'
               }
             </div>
-            <form onSubmit={handleMatSubmit}>
-              <div className="form-group"><label>{t('title')}</label><input type="text" placeholder={lang === 'en' ? 'Material title' : 'Materiāla virsraksts'} value={matForm.title} onChange={(e) => { setMatForm({ ...matForm, title: e.target.value }); setMatSuccess(''); }} required /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <form onSubmit={handleMatSubmit} className="adm-form">
+              <div className="form-group">
+                <label>{t('title')}</label>
+                <input
+                  type="text"
+                  placeholder={lang === 'en' ? 'Material title' : 'Materiāla virsraksts'}
+                  value={matForm.title}
+                  onChange={(e) => { setMatForm({ ...matForm, title: e.target.value }); setMatSuccess(''); }}
+                  required
+                />
+              </div>
+              <div className="adm-two-col">
                 <div className="form-group">
                   <label>{t('category')}</label>
                   <select value={matForm.category} onChange={(e) => setMatForm({ ...matForm, category: e.target.value })}>
@@ -144,14 +254,28 @@ const Admin = () => {
                   </select>
                 </div>
               </div>
-              <div className="form-group"><label>{t('content')}</label><textarea placeholder={lang === 'en' ? '## Introduction\n\nWrite your guide here. Supports **Markdown**...' : '## Ievads\n\nRakstiet savu rokasgrāmatu šeit. Atbalsta **Markdown**...'} value={matForm.content} onChange={(e) => { setMatForm({ ...matForm, content: e.target.value }); setMatSuccess(''); }} rows={12} required style={{ fontFamily: 'monospace', fontSize: '0.88rem' }} /></div>
               <div className="form-group">
-                <label>{lang === 'en' ? 'Cover image' : 'Vāka attēls'}</label>
-                <ImageUpload onUpload={setMatImage} currentImage={matImage} label={lang === 'en' ? 'Add cover image (optional)' : 'Pievienot vāka attēlu (neobligāts)'} />
+                <label>{t('content')}</label>
+                <textarea
+                  placeholder={lang === 'en' ? '## Introduction\n\nWrite your guide here...' : '## Ievads\n\nRakstiet savu rokasgrāmatu šeit...'}
+                  value={matForm.content}
+                  onChange={(e) => { setMatForm({ ...matForm, content: e.target.value }); setMatSuccess(''); }}
+                  rows={14}
+                  required
+                  style={{ fontFamily: 'monospace', fontSize: '0.88rem' }}
+                />
               </div>
-              {matSuccess && <div style={{ color: 'var(--success)', fontSize: '0.88rem', marginBottom: '0.8rem' }}>{matSuccess}</div>}
-              {matError && <div className="form-error">{matError}</div>}
-              <button type="submit" className="btn btn-primary" disabled={matLoading}>{matLoading ? t('publishing') : t('addMaterial')}</button>
+              <div className="form-group">
+                <label>{lang === 'en' ? 'Cover image' : 'Vāka attēls'} <span className="adm-optional">{lang === 'en' ? '(optional)' : '(neobligāts)'}</span></label>
+                <ImageUpload onUpload={setMatImage} currentImage={matImage} label={lang === 'en' ? 'Upload cover image' : 'Augšupielādēt vāka attēlu'} />
+              </div>
+              <div className="adm-form-footer">
+                {matSuccess && <span className="adm-success">{matSuccess}</span>}
+                {matError && <span className="form-error">{matError}</span>}
+                <button type="submit" className="btn btn-primary" disabled={matLoading}>
+                  {matLoading ? t('publishing') : t('addMaterial')}
+                </button>
+              </div>
             </form>
           </div>
         </div>
