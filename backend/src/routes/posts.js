@@ -9,7 +9,10 @@ router.get('/', async (req, res) => {
   try {
     const posts = await Post.findAll({
       where: { status: 'published' },
-      include: [{ model: User, as: 'author', attributes: ['id', 'firstName', 'lastName', 'avatar'] }],
+      include: [
+        { model: User, as: 'author', attributes: ['id', 'firstName', 'lastName', 'avatar'] },
+        { model: Comment, attributes: ['id'] },
+      ],
       order: [['createdAt', 'DESC']],
     });
     res.json(posts);
