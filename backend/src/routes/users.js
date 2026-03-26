@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Post = require('../models/Post');
+const Comment = require('../models/Comment');
 const EmailVerification = require('../models/EmailVerification');
 const { authenticate, isAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -109,6 +110,13 @@ router.post('/me/avatar', authenticate, upload.single('avatar'), async (req, res
     const user = await User.findByPk(req.user.id);
     await user.update({ avatar: result.secure_url });
     res.json({ avatar: result.secure_url });
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Servera kļūda' }); }
+});
+
+router.get('/:id/comments/count', async (req, res) => {
+  try {
+    const count = await Comment.count({ where: { authorId: req.params.id } });
+    res.json({ count });
   } catch (err) { console.error(err); res.status(500).json({ message: 'Servera kļūda' }); }
 });
 

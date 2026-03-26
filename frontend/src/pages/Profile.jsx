@@ -1,8 +1,8 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
-import { updateMe, uploadAvatar, requestEmailChange, confirmEmailChange, changePassword, deleteAccount, resendCode } from '../services/api';
+import { updateMe, uploadAvatar, requestEmailChange, confirmEmailChange, changePassword, deleteAccount, resendCode, getPublicProfile, getUserCommentCount } from '../services/api';
 import Avatar from '../components/Avatar';
 import './Profile.css';
 
@@ -18,6 +18,7 @@ const Profile = () => {
   const { t, lang } = useLang();
   const navigate = useNavigate();
   const fileRef = useRef();
+  const [stats, setStats] = useState({ postCount: 0, commentCount: 0 });
 
   // Profile fields
   const [profileForm, setProfileForm] = useState({ firstName: user?.firstName || '', lastName: user?.lastName || '', bio: user?.bio || '', location: user?.location || '', website: user?.website || '', interests: user?.interests || '' });
@@ -47,6 +48,15 @@ const Profile = () => {
 
   // Avatar
   const [avatarLoading, setAvatarLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    Promise.all([getPublicProfile(user.id), getUserCommentCount(user.id)])
+      .then(([profileRes, countRes]) => {
+        setStats({ postCount: profileRes.data.posts.length, commentCount: countRes.data.count });
+      })
+      .catch(console.error);
+  }, [user?.id]);
 
   const setMsg = useCallback((setter, type, text) => {
     setter({ type, text });
@@ -178,6 +188,28 @@ const Profile = () => {
           </div>
         </div>
         <Feedback m={profileMsg} />
+      </div>
+
+      {/* Stats */}
+      <div className="card profile-stats-row-card">
+        <div className="profile-stats-row">
+          <div className="profile-stat-box">
+            <span className="psb-num">{stats.postCount}</span>
+            <span className="psb-label">{lang === 'en' ? 'Posts' : 'Ieraksti'}</span>
+          </div>
+          <div className="profile-stat-box">
+            <span className="psb-num">{stats.commentCount}</span>
+            <span className="psb-label">{lang === 'en' ? 'Comments' : 'Komentāri'}</span>
+          </div>
+          <div className="profile-stat-box">
+            <span className="psb-num">
+              {user?.createdAt
+                ? new Date(user.createdAt).toLocaleDateString(lang === 'en' ? 'en-GB' : 'lv-LV', { year: 'numeric', month: 'short' })
+                : '—'}
+            </span>
+            <span className="psb-label">{lang === 'en' ? 'Member since' : 'Dalībnieks kopš'}</span>
+          </div>
+        </div>
       </div>
 
       {/* Edit profile */}

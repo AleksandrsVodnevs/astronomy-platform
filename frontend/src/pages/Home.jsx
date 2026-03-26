@@ -7,11 +7,15 @@ import './Home.css';
 import StarsBackground from '../components/StarsBackground';
 import EarthPlanet from '../components/EarthPlanet';
 
+const APOD_URL = 'https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY';
+
 const Home = () => {
   const { t, lang } = useLang();
   const [news, setNews] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [apod, setApod] = useState(null);
+  const [apodLoading, setApodLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([getNews(), getPosts()])
@@ -20,7 +24,17 @@ const Home = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    fetch(APOD_URL)
+      .then((r) => r.json())
+      .then((d) => setApod(d))
+      .catch(console.error)
+      .finally(() => setApodLoading(false));
+  }, []);
+
   if (loading) return <div className="loading">{t('loading')}</div>;
+
+  const isVideo = apod && (apod.media_type === 'video' || apod.url?.includes('youtube'));
 
   return (
     <div className="home">
@@ -40,7 +54,59 @@ const Home = () => {
         </div>
       </section>
 
-      <div className="home-content container">
+      <div className="home-body container">
+
+        {/* Left: NASA APOD */}
+        <div className="home-apod-col">
+          {apodLoading ? (
+            <div className="apod-skeleton">
+              <div className="apod-skel-img skel-pulse" />
+              <div className="apod-skel-line skel-pulse" style={{ width: '55%', margin: '1rem 1rem 0.5rem' }} />
+              <div className="apod-skel-line skel-pulse" style={{ width: '85%', margin: '0 1rem 0.4rem' }} />
+              <div className="apod-skel-line skel-pulse" style={{ width: '70%', margin: '0 1rem 1rem' }} />
+            </div>
+          ) : apod && !apod.error ? (
+            <div className="apod-card">
+              <span className="apod-eyebrow">NASA: Dienas attēls</span>
+              {isVideo ? (
+                <div className="apod-video-thumb">
+                  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.35">
+                    <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+                  </svg>
+                  <a href={apod.url} target="_blank" rel="noreferrer" className="apod-video-link">
+                    {lang === 'en' ? 'Watch on NASA' : 'Skatīt NASA vietnē'}
+                  </a>
+                </div>
+              ) : (
+                <img src={apod.url} alt={apod.title} className="apod-img" loading="lazy" />
+              )}
+              <div className="apod-info">
+                <div className="apod-meta">
+                  <span className="apod-date">{apod.date}</span>
+                  {apod.copyright && (
+                    <span className="apod-copy">© {apod.copyright.replace(/\n/g, ' ')}</span>
+                  )}
+                </div>
+                <h2 className="apod-title">{apod.title}</h2>
+                <p className="apod-excerpt">
+                  {apod.explanation?.substring(0, 200)}{apod.explanation?.length > 200 ? '… ' : ''}
+                  {apod.explanation?.length > 200 && (
+                    <a
+                      href={`https://apod.nasa.gov/apod/ap${apod.date.replace(/-/g, '').substring(2)}.html`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="apod-read-more"
+                    >
+                      {lang === 'en' ? 'Read more' : 'Lasīt vairāk'} →
+                    </a>
+                  )}
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Middle: Latest news */}
         <section className="home-news">
           <div className="section-header">
             <h2>{t('latestNews')}</h2>
@@ -64,6 +130,7 @@ const Home = () => {
           )}
         </section>
 
+        {/* Right: sidebar (popular posts + forum topics) */}
         <aside className="home-sidebar">
           <div className="sidebar-card">
             <h3>{t('popularPosts')}</h3>

@@ -23,4 +23,9 @@
 .public-post-body h3 { font-size: 0.97rem; font-weight: 600; color: var(--text-primary); }
 .public-post-body p { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; }
 .public-post-time { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.2rem; }
+.profile-stats-row { display: flex; width: 100%; border-top: 1px solid var(--border); margin-top: 0.6rem; padding-top: 0.8rem; }
+.profile-stat-box { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.18rem; padding: 0.3rem 0.2rem; }
+.profile-stat-box + .profile-stat-box { border-left: 1px solid var(--border); }
+.psb-num { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; text-align: center; word-break: break-word; }
+.psb-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; text-align: center; }
 @media (max-width: 768px) { .public-profile-container { grid-template-columns: 1fr; } .public-profile-sidebar { position: static; } }
