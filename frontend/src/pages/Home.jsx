@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getNews, getPosts } from '../services/api';
+import { getNews, getPosts, getApod } from '../services/api';
 import { useLang } from '../context/LanguageContext';
 import { timeAgo } from '../utils/timeAgo';
 import './Home.css';
 import StarsBackground from '../components/StarsBackground';
 import EarthPlanet from '../components/EarthPlanet';
 
-const APOD_URL = 'https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY';
+const APOD_CACHE_KEY = 'apod_cache_v3';
 
 const Home = () => {
   const { t, lang } = useLang();
@@ -25,9 +25,29 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    fetch(APOD_URL)
-      .then((r) => r.json())
-      .then((d) => setApod(d))
+    const today = new Date().toISOString().slice(0, 10);
+    // Serve from localStorage cache if today's entry exists
+    try {
+      const raw = localStorage.getItem(APOD_CACHE_KEY);
+      if (raw) {
+        const { date, data } = JSON.parse(raw);
+        if (date === today && data && !data.error) {
+          setApod(data);
+          setApodLoading(false);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Fetch via backend proxy (avoids per-browser-IP rate limiting)
+    getApod()
+      .then((res) => {
+        const d = res.data;
+        setApod(d);
+        if (!d.error) {
+          try { localStorage.setItem(APOD_CACHE_KEY, JSON.stringify({ date: today, data: d })); } catch (_) {}
+        }
+      })
       .catch(console.error)
       .finally(() => setApodLoading(false));
   }, []);
@@ -78,7 +98,13 @@ const Home = () => {
                   </a>
                 </div>
               ) : (
-                <img src={apod.url} alt={apod.title} className="apod-img" loading="lazy" />
+                <img
+                  src={apod.hdurl || apod.url}
+                  alt={apod.title}
+                  className="apod-img"
+                  loading="eager"
+                  onError={(e) => { e.target.src = apod.url; }}
+                />
               )}
               <div className="apod-info">
                 <div className="apod-meta">
@@ -89,21 +115,27 @@ const Home = () => {
                 </div>
                 <h2 className="apod-title">{apod.title}</h2>
                 <p className="apod-excerpt">
-                  {apod.explanation?.substring(0, 200)}{apod.explanation?.length > 200 ? '… ' : ''}
-                  {apod.explanation?.length > 200 && (
-                    <a
-                      href={`https://apod.nasa.gov/apod/ap${apod.date.replace(/-/g, '').substring(2)}.html`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="apod-read-more"
-                    >
-                      {lang === 'en' ? 'Read more' : 'Lasīt vairāk'} →
-                    </a>
-                  )}
+                  {apod.explanation?.substring(0, 220)}{'… '}
+                  <a
+                    href={`https://apod.nasa.gov/apod/ap${apod.date.replace(/-/g, '').substring(2)}.html`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="apod-read-more"
+                  >
+                    {lang === 'en' ? 'Read more' : 'Lasīt vairāk'} →
+                  </a>
                 </p>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <a className="apod-fallback" href="https://apod.nasa.gov" target="_blank" rel="noreferrer">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+              </svg>
+              <span className="apod-fallback-title">NASA: Dienas attēls</span>
+              <span className="apod-fallback-sub">Skatīt apod.nasa.gov →</span>
+            </a>
+          )}
         </div>
 
         {/* Middle: Latest news */}

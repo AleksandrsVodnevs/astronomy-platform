@@ -53,6 +53,16 @@
   color: var(--text-primary);
 }
 
+.nav-link--solar {
+  color: #4f8ef7;
+  opacity: 0.85;
+}
+
+.nav-link--solar:hover {
+  color: #7fb0ff;
+  opacity: 1;
+}
+
 .admin-link {
   color: #8b6fd4;
 }

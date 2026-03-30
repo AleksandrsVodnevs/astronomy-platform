@@ -47,6 +47,7 @@ export const deleteAccount = (password) => API.delete('/users/me', { data: { pas
 export const uploadAvatar = (formData) => API.post('/users/me/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const getPublicProfile = (id) => API.get(`/users/${id}`);
 export const getUserCommentCount = (id) => API.get(`/users/${id}/comments/count`);
+export const getApod = () => API.get('/apod');
 export const getUsers = () => API.get('/users');
 export const updateUserRole = (id, role) => API.put(`/users/${id}/role`, { role });
 export const updateUserStatus = (id, status) => API.put(`/users/${id}/status`, { status });

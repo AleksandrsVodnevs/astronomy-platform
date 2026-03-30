@@ -110,6 +110,7 @@ const Navbar = () => {
           <Link to="/zinas" className="nav-link">{t('news')}</Link>
           <Link to="/forums" className="nav-link">{t('forum')}</Link>
           <Link to="/materiali" className="nav-link">{t('materials')}</Link>
+          <Link to="/saules-sistema" className="nav-link nav-link--solar">Saules sistēma</Link>
         </div>
         <form className="navbar-search" onSubmit={handleSearch}>
           <input type="text" placeholder={t('search')} value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -145,6 +146,7 @@ const Navbar = () => {
           <Link to="/zinas" onClick={() => setMenuOpen(false)}>{t('news')}</Link>
           <Link to="/forums" onClick={() => setMenuOpen(false)}>{t('forum')}</Link>
           <Link to="/materiali" onClick={() => setMenuOpen(false)}>{t('materials')}</Link>
+          <Link to="/saules-sistema" onClick={() => setMenuOpen(false)}>Saules sistēma</Link>
           {user ? (
             <>
               <Link to="/profils" onClick={() => setMenuOpen(false)}>{t('profileTitle')}</Link>

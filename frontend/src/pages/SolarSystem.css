@@ -1,0 +1,355 @@
+/* ── Page container ─────────────────────────────────── */
+.ss-page {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  background: #070b14;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+.ss-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.ss-canvas:active {
+  cursor: grabbing;
+}
+
+/* ── Hover tooltip ───────────────────────────────────── */
+.ss-tooltip {
+  position: fixed;
+  background: rgba(13, 21, 38, 0.92);
+  color: #f1f5f9;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  z-index: 300;
+  border: 1px solid #1e2a45;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+/* ── Info panel ──────────────────────────────────────── */
+.ss-panel {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 320px;
+  height: calc(100vh - 60px);
+  background: #0d1526;
+  border-left: 1px solid #1e2a45;
+  padding: 2rem 1.6rem;
+  transform: translateX(100%);
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  z-index: 200;
+  box-sizing: border-box;
+}
+
+.ss-panel--open {
+  transform: translateX(0);
+}
+
+.ss-panel-close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #1e2a45;
+  color: #94a3b8;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ss-panel-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+}
+
+.ss-panel-name {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+  padding-right: 2.5rem;
+}
+
+.ss-panel-divider {
+  height: 1px;
+  background: #1e2a45;
+  margin-bottom: 1.4rem;
+}
+
+/* Stats list */
+.ss-stats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1.6rem;
+}
+
+.ss-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ss-stat:last-child {
+  border-bottom: none;
+}
+
+.ss-stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.ss-stat-value {
+  font-size: 0.82rem;
+  color: #f1f5f9;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Fact box */
+.ss-fact {
+  background: rgba(79, 142, 247, 0.07);
+  border: 1px solid rgba(79, 142, 247, 0.18);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+
+.ss-fact-label {
+  display: block;
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #4f8ef7;
+  margin-bottom: 0.55rem;
+}
+
+.ss-fact-text {
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+}
+
+/* ── Left control panel ──────────────────────────────── */
+.ss-ctrl-panel {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(-220px);
+  width: 220px;
+  background: #0d1526;
+  border: 1px solid #1e2a45;
+  border-radius: 0 12px 12px 0;
+  padding: 1.5rem;
+  z-index: 150;
+  transition: transform 0.3s ease;
+  box-sizing: border-box;
+}
+
+.ss-ctrl-panel--open {
+  transform: translateY(-50%) translateX(0);
+}
+
+.ss-ctrl-toggle {
+  position: absolute;
+  right: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 60px;
+  background: #4f8ef7;
+  color: #fff;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  padding: 0;
+}
+
+.ss-ctrl-toggle:hover {
+  background: #3a7de8;
+}
+
+.ss-ctrl-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.ss-ctrl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.ss-ctrl-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ss-ctrl-value {
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ss-ctrl-zoom {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ss-ctrl-btn {
+  min-height: 44px;
+  flex: 1;
+  background: #131828;
+  border: 1px solid #1e2a45;
+  color: #f1f5f9;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.ss-ctrl-btn:hover {
+  border-color: #4f8ef7;
+  color: #4f8ef7;
+  background: rgba(79, 142, 247, 0.06);
+}
+
+.ss-ctrl-btn--full {
+  width: 100%;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0 0.5rem;
+}
+
+.ss-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 180px;
+  height: 4px;
+  background: linear-gradient(to right, #4f8ef7 0%, #4f8ef7 var(--fill, 20%), #1e2a45 var(--fill, 20%));
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.ss-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4f8ef7;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.25), 0 0 10px rgba(79, 142, 247, 0.4);
+  transition: box-shadow 0.15s ease;
+}
+
+.ss-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4f8ef7;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.25);
+}
+
+.ss-slider:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(79, 142, 247, 0.35), 0 0 14px rgba(79, 142, 247, 0.55);
+}
+
+/* ── Mobile ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Right info panel — slides up from bottom */
+  .ss-panel {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 58vh;
+    border-left: none;
+    border-top: 1px solid #1e2a45;
+    border-radius: 18px 18px 0 0;
+    transform: translateY(100%);
+    padding: 1.4rem 1.2rem;
+  }
+
+  .ss-panel--open {
+    transform: translateY(0);
+  }
+
+  .ss-panel-name {
+    font-size: 1.6rem;
+  }
+
+  /* Left control panel — bottom-left corner on mobile */
+  .ss-ctrl-panel {
+    top: auto;
+    bottom: 80px;
+    left: 0;
+    transform: translateX(-200px);
+    width: 190px;
+    padding: 1.1rem;
+    border-radius: 0 10px 10px 0;
+  }
+
+  .ss-ctrl-panel--open {
+    transform: translateX(0);
+  }
+
+  .ss-ctrl-content {
+    gap: 1.1rem;
+  }
+
+  .ss-slider {
+    width: 100%;
+  }
+}

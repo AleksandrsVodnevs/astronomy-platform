@@ -16,6 +16,7 @@ import PublicProfile from './pages/PublicProfile';
 import Admin from './pages/Admin';
 import Materials from './pages/Materials';
 import MaterialDetail from './pages/MaterialDetail';
+import SolarSystem from './pages/SolarSystem';
 import NotFound from './pages/NotFound';
 import './App.css';
 import Footer from './components/Footer';
@@ -44,6 +45,7 @@ function App() {
           <Route path="/forums/jauns" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
           <Route path="/materiali" element={<Materials />} />
           <Route path="/materiali/:id" element={<MaterialDetail />} />
+          <Route path="/saules-sistema" element={<SolarSystem />} />
           <Route path="/pieteikties" element={<Login />} />
           <Route path="/registreties" element={<Register />} />
           <Route path="/aizmirsu-paroli" element={<ForgotPassword />} />

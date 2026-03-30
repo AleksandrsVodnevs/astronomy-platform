@@ -25,12 +25,13 @@ Material.belongsTo(User, { foreignKey: 'adminId', as: 'admin' });
 User.hasMany(PasswordReset, { foreignKey: 'userId' });
 PasswordReset.belongsTo(User, { foreignKey: 'userId' });
 
-const authRoutes = require('./routes/auth');
-const postRoutes = require('./routes/posts');
-const commentRoutes = require('./routes/comments');
-const newsRoutes = require('./routes/news');
-const userRoutes = require('./routes/users');
+const authRoutes     = require('./routes/auth');
+const postRoutes     = require('./routes/posts');
+const commentRoutes  = require('./routes/comments');
+const newsRoutes     = require('./routes/news');
+const userRoutes     = require('./routes/users');
 const materialRoutes = require('./routes/materials');
+const apodRoutes     = require('./routes/apod');
 
 const app = express();
 app.use(cors({
@@ -45,6 +46,7 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/materials', materialRoutes);
+app.use('/api/apod',     apodRoutes);
 
 const PORT = process.env.PORT || 5000;
 
