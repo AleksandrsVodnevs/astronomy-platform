@@ -110,7 +110,7 @@ const Navbar = () => {
           <Link to="/zinas" className="nav-link">{t('news')}</Link>
           <Link to="/forums" className="nav-link">{t('forum')}</Link>
           <Link to="/materiali" className="nav-link">{t('materials')}</Link>
-          <Link to="/saules-sistema" className="nav-link nav-link--solar">Saules sistēma</Link>
+          <Link to="/saules-sistema" className="nav-link">Saules sistēma</Link>
         </div>
         <form className="navbar-search" onSubmit={handleSearch}>
           <input type="text" placeholder={t('search')} value={search} onChange={(e) => setSearch(e.target.value)} />
