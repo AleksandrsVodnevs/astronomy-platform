@@ -21,6 +21,20 @@ const MOON_DATA = {
   },
 };
 
+const SUN_DATA = {
+  id: 'sun',
+  name: 'Saule',
+  info: {
+    diameter: '1 392 700 km',
+    distanceLabel: 'Pozīcija',
+    distance: 'Saules sistēmas centrs',
+    moons: '—',
+    orbit: '25–35 dienas (rotācija)',
+    temp: '+5 500°C',
+    fact: 'Saule satur 99,86% no visas Saules sistēmas masas un ir aptuveni 109× plašāka par Zemi.',
+  },
+};
+
 // ── Planet definitions ─────────────────────────────────────
 const PLANET_DATA = [
   {
@@ -212,11 +226,16 @@ const SolarSystem = () => {
   const controlsRef    = useRef(null);
   const zoomTargetRef  = useRef(null);   // target camera distance, null = idle
   const resetActiveRef = useRef(false);  // smooth-reset in progress
+  // Planet focus / follow
+  const focusedRef     = useRef(null);   // { mesh, size } of focused body
+  const focusTransRef  = useRef(false);  // true = transition in progress
+  const unfocusRef     = useRef(false);  // flag: React → animation loop
 
   const [selectedPlanet, setSelectedPlanet] = useState(null);
   const [tooltip, setTooltip] = useState(null);
   const [speed, setSpeed] = useState(1);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [focusedName, setFocusedName] = useState(null);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -262,14 +281,9 @@ const SolarSystem = () => {
 
     // ── Milky Way skybox ───────────────────────────────────
     const skyTex = loader.load('/textures/8k_stars_milky_way.jpg');
-    skyTex.anisotropy  = renderer.capabilities.getMaxAnisotropy();
-    skyTex.minFilter   = THREE.LinearFilter;
-    skyTex.magFilter   = THREE.LinearFilter;
-    const skyMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(15000, 64, 64),
-      new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide })
-    );
-    scene.add(skyMesh);
+    skyTex.mapping    = THREE.EquirectangularReflectionMapping;
+    skyTex.colorSpace = THREE.SRGBColorSpace;
+    scene.background  = skyTex;
 
     // ── Lights ─────────────────────────────────────────────
     // Primary white-warm sun light — infinite range, no decay
@@ -408,7 +422,7 @@ const SolarSystem = () => {
     const mouse = new THREE.Vector2();
 
     // Helper: all clickable meshes
-    const allClickable = () => [...planetObjects.map(p => p.mesh), moonMesh];
+    const allClickable = () => [...planetObjects.map(p => p.mesh), moonMesh, sunMesh];
 
     // ── Animation loop ─────────────────────────────────────
     const animate = () => {
@@ -436,6 +450,62 @@ const SolarSystem = () => {
       );
       moonMesh.rotation.y = moonAngle + Math.PI; // tidally locked
       moonOrbitRing.position.set(ex, 0, ez);
+
+      // ── Unfocus if requested (ESC / back button / reset) ──
+      if (unfocusRef.current) {
+        unfocusRef.current   = false;
+        focusedRef.current   = null;
+        focusTransRef.current = false;
+        controls.enabled     = true;
+        controls.minDistance = 14;
+        controls.maxDistance = 1800;
+        resetActiveRef.current = true;
+        setFocusedName(null);
+      }
+
+      // ── Planet focus: transition in then follow ────────────
+      if (focusedRef.current && !resetActiveRef.current) {
+        const { mesh, size } = focusedRef.current;
+        const pos = mesh.position;
+
+        if (focusTransRef.current) {
+          // Disable user controls while flying toward the planet
+          controls.enabled = false;
+
+          // Camera target: sun-facing side, slightly above.
+          // Special case: the Sun itself sits at origin — use a fixed approach angle.
+          const viewDist = Math.max(size * 5, 4);
+          let desired;
+          if (pos.length() < 0.1) {
+            desired = new THREE.Vector3(size * 1.5, size * 2, size * 5);
+          } else {
+            const toSun = new THREE.Vector3().copy(pos).negate().normalize();
+            desired = new THREE.Vector3()
+              .copy(pos)
+              .add(toSun.multiplyScalar(viewDist))
+              .add(new THREE.Vector3(0, Math.max(size * 1.5, 2), 0));
+          }
+
+          const lf = 1 - Math.exp(-3.5 * delta);
+          camera.position.lerp(desired, lf);
+          camera.lookAt(pos);
+          controls.target.copy(pos);
+
+          // Close enough? — end transition and hand control back
+          if (camera.position.distanceTo(desired) < Math.max(size * 0.15, 0.3)) {
+            focusTransRef.current = false;
+            camera.position.copy(desired);
+            controls.target.copy(pos);
+            controls.update();                          // sync OrbitControls state
+            controls.enabled     = true;
+            controls.minDistance = Math.max(size * 1.3, 0.5);
+            controls.maxDistance = Math.max(size * 70,  50);
+          }
+        } else {
+          // Following mode: keep OrbitControls orbiting the moving planet
+          controls.target.copy(pos);
+        }
+      }
 
       // Smooth zoom toward zoomTargetRef
       if (zoomTargetRef.current !== null) {
@@ -481,12 +551,22 @@ const SolarSystem = () => {
       raycaster.setFromCamera(mouse, camera);
       const hits = raycaster.intersectObjects(allClickable());
       if (hits.length > 0) {
-        if (hits[0].object === moonMesh) {
-          setSelectedPlanet(MOON_DATA);
+        const hitMesh  = hits[0].object;
+        const isSunHit  = hitMesh === sunMesh;
+        const isMoonHit = hitMesh === moonMesh;
+        const obj  = (isSunHit || isMoonHit) ? null : planetObjects.find(p => p.mesh === hitMesh);
+        const data = isSunHit ? SUN_DATA : isMoonHit ? MOON_DATA : obj?.data;
+        const sz   = isSunHit ? 4 : isMoonHit ? MOON_SIZE : obj?.data.size;
+
+        if (data) {
+          setSelectedPlanet(data);
+          // Start zoom-in to the clicked body
+          focusedRef.current    = { mesh: hitMesh, size: sz };
+          focusTransRef.current = true;
+          zoomTargetRef.current = null;          // cancel any pending zoom
+          setFocusedName(data.name);
           return;
         }
-        const obj = planetObjects.find(p => p.mesh === hits[0].object);
-        if (obj) { setSelectedPlanet(obj.data); return; }
       }
       setSelectedPlanet(null);
     };
@@ -498,22 +578,25 @@ const SolarSystem = () => {
       raycaster.setFromCamera(mouse, camera);
       const hits = raycaster.intersectObjects(allClickable());
 
-      // Reset previous glow
+      // Reset previous glow (guard: MeshBasicMaterial has no emissive)
       if (hoveredRef.current) {
-        hoveredRef.current.material.emissive.setHex(0x000000);
+        if (hoveredRef.current.material.emissive)
+          hoveredRef.current.material.emissive.setHex(0x000000);
         hoveredRef.current = null;
       }
 
       if (hits.length > 0) {
         const hitMesh = hits[0].object;
+        const isSun   = hitMesh === sunMesh;
         const isMoon  = hitMesh === moonMesh;
-        const obj     = isMoon ? null : planetObjects.find(p => p.mesh === hitMesh);
-        const data    = isMoon ? MOON_DATA : obj?.data;
+        const obj     = (isSun || isMoon) ? null : planetObjects.find(p => p.mesh === hitMesh);
+        const data    = isSun ? SUN_DATA : isMoon ? MOON_DATA : obj?.data;
 
         if (data) {
           container.style.cursor = 'pointer';
           hoveredRef.current = hitMesh;
-          hitMesh.material.emissive.setHex(0x222233);
+          if (hitMesh.material.emissive)
+            hitMesh.material.emissive.setHex(0x222233);
           setTooltip({ name: data.name, x: e.clientX, y: e.clientY });
           return;
         }
@@ -532,9 +615,19 @@ const SolarSystem = () => {
       renderer.setSize(w, h);
     };
 
+    // ── ESC to unfocus ─────────────────────────────────────
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && focusedRef.current) {
+        unfocusRef.current = true;
+        setFocusedName(null);
+        setSelectedPlanet(null);
+      }
+    };
+
     container.addEventListener('click', handleClick);
     container.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('resize', handleResize);
+    window.addEventListener('keydown', handleKeyDown);
 
     // ── Cleanup ────────────────────────────────────────────
     return () => {
@@ -542,7 +635,10 @@ const SolarSystem = () => {
       container.removeEventListener('click', handleClick);
       container.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleKeyDown);
       controls.dispose();
+      scene.background = null;
+      skyTex.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
@@ -580,7 +676,14 @@ const SolarSystem = () => {
     zoomTargetRef.current = Math.min(ctrl.maxDistance, cur * 1.25);
   };
 
+  const handleUnfocus = () => {
+    unfocusRef.current = true;   // animation loop clears focus + triggers reset
+    setFocusedName(null);
+    setSelectedPlanet(null);
+  };
+
   const handleReset = () => {
+    unfocusRef.current     = true;  // also exits any planet focus
     resetActiveRef.current = true;
     zoomTargetRef.current  = null;
     setSpeed(1);
@@ -593,6 +696,13 @@ const SolarSystem = () => {
   return (
     <div className="ss-page">
       <div ref={mountRef} className="ss-canvas" />
+
+      {/* Back button — shown while focused on a planet */}
+      {focusedName && (
+        <button className="ss-back-btn" onClick={handleUnfocus}>
+          ← {focusedName}
+        </button>
+      )}
 
       {/* Hover tooltip */}
       {tooltip && (

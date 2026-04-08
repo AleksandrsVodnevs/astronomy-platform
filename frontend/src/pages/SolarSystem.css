@@ -18,6 +18,33 @@
   cursor: grabbing;
 }
 
+/* ── Back / unfocus button ───────────────────────────── */
+.ss-back-btn {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13, 21, 38, 0.88);
+  border: 1px solid #1e2a45;
+  color: #f1f5f9;
+  padding: 0.45rem 1.2rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 250;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.ss-back-btn:hover {
+  border-color: #4f8ef7;
+  color: #4f8ef7;
+}
+
 /* ── Hover tooltip ───────────────────────────────────── */
 .ss-tooltip {
   position: fixed;
