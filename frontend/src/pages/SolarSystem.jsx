@@ -227,9 +227,10 @@ const SolarSystem = () => {
   const zoomTargetRef  = useRef(null);   // target camera distance, null = idle
   const resetActiveRef = useRef(false);  // smooth-reset in progress
   // Planet focus / follow
-  const focusedRef     = useRef(null);   // { mesh, size } of focused body
+  const focusedRef     = useRef(null);   // { mesh, size, name } of focused body
   const focusTransRef  = useRef(false);  // true = transition in progress
   const unfocusRef     = useRef(false);  // flag: React → animation loop
+  const lastFocusedNameRef = useRef(null); // tracks last name pushed to React state
 
   const [selectedPlanet, setSelectedPlanet] = useState(null);
   const [tooltip, setTooltip] = useState(null);
@@ -361,6 +362,24 @@ const SolarSystem = () => {
       mesh.position.z = Math.sin(startAngle) * data.orbitRadius;
       scene.add(mesh);
 
+      // Earth cloud layer — slightly larger sphere, non-raycastable
+      let cloudMesh = null;
+      if (data.id === 'earth') {
+        const cloudTex = loader.load('/textures/8k_earth_clouds.jpg');
+        cloudMesh = new THREE.Mesh(
+          new THREE.SphereGeometry(data.size * 1.008, 40, 40),
+          new THREE.MeshPhongMaterial({
+            map:         cloudTex,
+            alphaMap:    cloudTex,
+            transparent: true,
+            depthWrite:  false,
+          })
+        );
+        cloudMesh.position.copy(mesh.position);
+        cloudMesh.raycast = () => {}; // clicks pass through to Earth sphere
+        scene.add(cloudMesh);
+      }
+
       // Saturn rings with alpha texture + UV fix
       let saturnRing = null;
       if (data.hasRings) {
@@ -383,7 +402,7 @@ const SolarSystem = () => {
         scene.add(saturnRing);
       }
 
-      planetObjects.push({ mesh, ring: saturnRing, data, angle: startAngle });
+      planetObjects.push({ mesh, ring: saturnRing, cloud: cloudMesh, data, angle: startAngle });
     });
 
     // ── Moon (orbits Earth) ────────────────────────────────
@@ -437,6 +456,10 @@ const SolarSystem = () => {
         p.mesh.position.z = Math.sin(p.angle) * p.data.orbitRadius;
         p.mesh.rotation.y += (p.data.selfRotation || 1) * 0.5 * delta * Math.max(s, 0.1);
         if (p.ring) p.ring.position.copy(p.mesh.position);
+        if (p.cloud) {
+          p.cloud.position.copy(p.mesh.position);
+          p.cloud.rotation.y += 0.55 * 0.5 * delta * Math.max(s, 0.1);
+        }
       });
 
       // Moon orbits Earth; tidal lock keeps same face toward Earth
@@ -460,7 +483,14 @@ const SolarSystem = () => {
         controls.minDistance = 14;
         controls.maxDistance = 1800;
         resetActiveRef.current = true;
-        setFocusedName(null);
+      }
+
+      // ── Sync focused name to React state ──────────────────
+      // Driven from the ref so switching planets mid-follow always updates the button.
+      const _newName = focusedRef.current ? focusedRef.current.name : null;
+      if (_newName !== lastFocusedNameRef.current) {
+        lastFocusedNameRef.current = _newName;
+        setFocusedName(_newName);
       }
 
       // ── Planet focus: transition in then follow ────────────
@@ -561,10 +591,9 @@ const SolarSystem = () => {
         if (data) {
           setSelectedPlanet(data);
           // Start zoom-in to the clicked body
-          focusedRef.current    = { mesh: hitMesh, size: sz };
+          focusedRef.current    = { mesh: hitMesh, size: sz, name: data.name };
           focusTransRef.current = true;
           zoomTargetRef.current = null;          // cancel any pending zoom
-          setFocusedName(data.name);
           return;
         }
       }
@@ -619,7 +648,6 @@ const SolarSystem = () => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && focusedRef.current) {
         unfocusRef.current = true;
-        setFocusedName(null);
         setSelectedPlanet(null);
       }
     };
@@ -678,7 +706,6 @@ const SolarSystem = () => {
 
   const handleUnfocus = () => {
     unfocusRef.current = true;   // animation loop clears focus + triggers reset
-    setFocusedName(null);
     setSelectedPlanet(null);
   };
 
