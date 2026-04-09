@@ -69,7 +69,7 @@ const Forum = () => {
 
       {searchQuery && (
         <div className="search-info">
-          <span>"{searchQuery}" — {filtered.length} {lang === 'en' ? 'results' : 'rezultāti'}</span>
+          <span>"{searchQuery}" - {filtered.length} {lang === 'en' ? 'results' : 'rezultāti'}</span>
           <button onClick={() => setSearchParams({})} className="clear-search">{lang === 'en' ? 'Clear' : 'Dzēst'}</button>
         </div>
       )}

@@ -14,7 +14,7 @@ const MOON_DATA = {
     diameter: '3 474 km',
     distanceLabel: 'Attālums no Zemes',
     distance: '384 400 km',
-    moons: '—',
+    moons: '-',
     orbit: '27,3 dienas',
     temp: '-173°C līdz +127°C',
     fact: 'Mēness ir vienīgā vieta ārpus Zemes, kur cilvēks ir staigājis.',
@@ -28,8 +28,8 @@ const SUN_DATA = {
     diameter: '1 392 700 km',
     distanceLabel: 'Pozīcija',
     distance: 'Saules sistēmas centrs',
-    moons: '—',
-    orbit: '25–35 dienas (rotācija)',
+    moons: '-',
+    orbit: '25-35 dienas (rotācija)',
     temp: '+5 500°C',
     fact: 'Saule satur 99,86% no visas Saules sistēmas masas un ir aptuveni 109× plašāka par Zemi.',
   },
@@ -70,7 +70,7 @@ const PLANET_DATA = [
       moons: '0',
       orbit: '225 dienas',
       temp: '+462°C',
-      fact: 'Venera ir karstākā planēta — karstāka par Merkuru, lai gan tālāk no Saules.',
+      fact: 'Venera ir karstākā planēta - karstāka par Merkuru, lai gan tālāk no Saules.',
     },
   },
   {
@@ -106,7 +106,7 @@ const PLANET_DATA = [
       moons: '2',
       orbit: '687 dienas',
       temp: '-87°C līdz -5°C',
-      fact: 'Marsā atrodas Olimpa kalns — augstākais vulkāns Saules sistēmā.',
+      fact: 'Marsā atrodas Olimpa kalns - augstākais vulkāns Saules sistēmā.',
     },
   },
   {
@@ -143,7 +143,7 @@ const PLANET_DATA = [
       moons: '146',
       orbit: '29 gadi',
       temp: '-138°C',
-      fact: 'Saturna gredzeni sastāv no ledus un akmeņiem — daži gabali ir mikroskopiski mazi.',
+      fact: 'Saturna gredzeni sastāv no ledus un akmeņiem - daži gabali ir mikroskopiski mazi.',
     },
   },
   {
@@ -161,7 +161,7 @@ const PLANET_DATA = [
       moons: '27',
       orbit: '84 gadi',
       temp: '-195°C',
-      fact: 'Urāns rotē uz sāniem — tā ass ir gandrīz paralēla orbītas plaknei.',
+      fact: 'Urāns rotē uz sāniem - tā ass ir gandrīz paralēla orbītas plaknei.',
     },
   },
   {
@@ -179,7 +179,7 @@ const PLANET_DATA = [
       moons: '16',
       orbit: '165 gadi',
       temp: '-200°C',
-      fact: 'Neptūnā pūš spēcīgākie vēji Saules sistēmā — līdz 2100 km/h.',
+      fact: 'Neptūnā pūš spēcīgākie vēji Saules sistēmā - līdz 2100 km/h.',
     },
   },
 ];
@@ -272,8 +272,9 @@ const SolarSystem = () => {
     cameraRef.current    = camera;
     controlsRef.current  = controls;
 
-    // Pre-allocated helpers for zoom interpolation (avoid per-frame allocation)
-    const _zoomDir  = new THREE.Vector3();
+    // Pre-allocated helpers (avoid per-frame allocation)
+    const _zoomDir    = new THREE.Vector3();
+    const _followDelta = new THREE.Vector3();
     const INIT_POS  = new THREE.Vector3(0, 72, 108);
     const INIT_TGT  = new THREE.Vector3(0, 0, 0);
 
@@ -476,12 +477,14 @@ const SolarSystem = () => {
 
       // ── Unfocus if requested (ESC / back button / reset) ──
       if (unfocusRef.current) {
-        unfocusRef.current   = false;
-        focusedRef.current   = null;
+        unfocusRef.current    = false;
+        focusedRef.current    = null;
         focusTransRef.current = false;
-        controls.enabled     = true;
-        controls.minDistance = 14;
-        controls.maxDistance = 1800;
+        controls.enabled      = true;
+        controls.minDistance  = 14;
+        controls.maxDistance  = 1800;
+        controls.minPolarAngle = 0;
+        controls.maxPolarAngle = Math.PI * 0.82;        // restore global limit
         resetActiveRef.current = true;
       }
 
@@ -527,12 +530,17 @@ const SolarSystem = () => {
             camera.position.copy(desired);
             controls.target.copy(pos);
             controls.update();                          // sync OrbitControls state
-            controls.enabled     = true;
-            controls.minDistance = Math.max(size * 1.3, 0.5);
-            controls.maxDistance = Math.max(size * 70,  50);
+            controls.enabled      = true;
+            controls.minDistance  = Math.max(size * 0.6, 0.2);
+            controls.maxDistance  = Math.max(size * 70,  50);
+            controls.minPolarAngle = 0;
+            controls.maxPolarAngle = Math.PI;           // full vertical freedom when focused
           }
         } else {
-          // Following mode: keep OrbitControls orbiting the moving planet
+          // Following mode: translate camera by the same delta the planet moved so
+          // OrbitControls sees unchanged spherical coords and doesn't fight the movement.
+          _followDelta.subVectors(pos, controls.target);
+          camera.position.add(_followDelta);
           controls.target.copy(pos);
         }
       }
@@ -760,7 +768,7 @@ const SolarSystem = () => {
                 <span className="ss-stat-label">{distanceLabel}</span>
                 <span className="ss-stat-value">{selectedPlanet.info.distance}</span>
               </li>
-              {selectedPlanet.info.moons !== '—' && (
+              {selectedPlanet.info.moons !== '-' && (
                 <li className="ss-stat">
                   <span className="ss-stat-label">Pavadoņi</span>
                   <span className="ss-stat-value">{selectedPlanet.info.moons}</span>
@@ -810,6 +818,7 @@ const SolarSystem = () => {
               value={speed}
               onChange={handleSpeedChange}
               className="ss-slider"
+              style={{ '--fill': `${(speed / 5) * 100}%` }}
               aria-label="Simulācijas ātrums"
             />
           </div>

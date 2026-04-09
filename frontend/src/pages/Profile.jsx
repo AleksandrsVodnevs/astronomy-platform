@@ -205,7 +205,7 @@ const Profile = () => {
             <span className="psb-num">
               {user?.createdAt
                 ? new Date(user.createdAt).toLocaleDateString(lang === 'en' ? 'en-GB' : 'lv-LV', { year: 'numeric', month: 'short' })
-                : '—'}
+                : '-'}
             </span>
             <span className="psb-label">{lang === 'en' ? 'Member since' : 'Dalībnieks kopš'}</span>
           </div>
