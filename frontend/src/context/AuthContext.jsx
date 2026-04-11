@@ -19,9 +19,15 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const loginUser = (token, userData) => {
+  const loginUser = async (token, userData) => {
     localStorage.setItem('token', token);
     setUser(userData);
+    try {
+      const res = await getMe();
+      setUser(res.data);
+    } catch {
+      // keep userData if getMe fails
+    }
   };
 
   const logoutUser = () => {

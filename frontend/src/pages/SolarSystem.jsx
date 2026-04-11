@@ -347,15 +347,51 @@ const SolarSystem = () => {
       orbitRing.rotation.x = -Math.PI / 2;
       scene.add(orbitRing);
 
-      // Planet mesh — MeshPhongMaterial gives shininess + specular response
-      const mat = new THREE.MeshPhongMaterial({
-        map:       loader.load(data.texture),
-        emissive:  data.id === 'earth'
-                     ? new THREE.Color(0x112244)
-                     : new THREE.Color(0, 0, 0),
-        shininess: 15,
-        specular:  new THREE.Color(0x333333),
-      });
+      // Planet mesh — Earth uses a custom day/night shader; others use MeshPhongMaterial
+      let mat;
+      if (data.id === 'earth') {
+        const dayTex   = loader.load(data.texture);
+        const nightTex = loader.load('/textures/8k_earth_nightmap.jpg');
+        mat = new THREE.ShaderMaterial({
+          uniforms: {
+            dayMap:   { value: dayTex },
+            nightMap: { value: nightTex },
+          },
+          vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vWorldNormal;
+            varying vec3 vWorldPosition;
+            void main() {
+              vUv = uv;
+              vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+              vWorldNormal = normalize(mat3(modelMatrix) * normal);
+              gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform sampler2D dayMap;
+            uniform sampler2D nightMap;
+            varying vec2 vUv;
+            varying vec3 vWorldNormal;
+            varying vec3 vWorldPosition;
+            void main() {
+              vec3 toSun = normalize(-vWorldPosition);
+              float NdotL = dot(vWorldNormal, toSun);
+              float blend = smoothstep(-0.15, 0.15, NdotL);
+              vec4 day = texture2D(dayMap, vUv);
+              vec4 night = texture2D(nightMap, vUv);
+              gl_FragColor = mix(night, day, blend);
+            }
+          `,
+        });
+      } else {
+        mat = new THREE.MeshPhongMaterial({
+          map:       loader.load(data.texture),
+          emissive:  new THREE.Color(0, 0, 0),
+          shininess: 15,
+          specular:  new THREE.Color(0x333333),
+        });
+      }
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 40, 40), mat);
 
       const startAngle = (idx / PLANET_DATA.length) * Math.PI * 2;
@@ -403,7 +439,7 @@ const SolarSystem = () => {
         scene.add(saturnRing);
       }
 
-      planetObjects.push({ mesh, ring: saturnRing, cloud: cloudMesh, data, angle: startAngle });
+      planetObjects.push({ mesh, ring: saturnRing, cloud: cloudMesh, orbitLine: orbitRing, data, angle: startAngle });
     });
 
     // ── Moon (orbits Earth) ────────────────────────────────
@@ -435,6 +471,40 @@ const SolarSystem = () => {
 
     let moonAngle = Math.PI * 0.7;  // stagger from Earth's starting position
 
+    // ── Asteroid belt (r 35–46, between Mars r=31 and Jupiter r=50) ─
+    const BELT_COUNT = 2500;
+    const beltPos = new Float32Array(BELT_COUNT * 3);
+    for (let i = 0; i < BELT_COUNT; i++) {
+      const angle  = Math.random() * Math.PI * 2;
+      const radius = 35 + Math.random() * 11;
+      beltPos[i * 3]     = Math.cos(angle) * radius;
+      beltPos[i * 3 + 1] = (Math.random() - 0.5) * 2.5;
+      beltPos[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+    const beltGeo = new THREE.BufferGeometry();
+    beltGeo.setAttribute('position', new THREE.BufferAttribute(beltPos, 3));
+    const beltMat = new THREE.PointsMaterial({
+      color: 0xaaaaaa,
+      size: 0.18,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.75,
+    });
+    const beltPoints = new THREE.Points(beltGeo, beltMat);
+    scene.add(beltPoints);
+
+    // ── Orbit highlight helpers ────────────────────────────
+    let hoveredOrbit = null;
+    let focusedOrbit = null;
+    const ORBIT_DEFAULT = { hex: 0x1e3a5f, op: 0.5 };
+    const ORBIT_HOVER   = { hex: 0x3a7fff, op: 0.85 };
+    const ORBIT_FOCUS   = { hex: 0x66b3ff, op: 1.0 };
+    const applyOrbit = (mesh, style) => {
+      if (!mesh) return;
+      mesh.material.color.setHex(style.hex);
+      mesh.material.opacity = style.op;
+    };
+
     // ── Clock & Raycaster ──────────────────────────────────
     const clock    = new THREE.Clock();
     const raycaster = new THREE.Raycaster();
@@ -463,6 +533,8 @@ const SolarSystem = () => {
         }
       });
 
+      beltPoints.rotation.y += 0.008 * BASE_SPEED * delta * Math.max(s, 0.1);
+
       // Moon orbits Earth; tidal lock keeps same face toward Earth
       moonAngle += 2.0 * BASE_SPEED * delta * s;
       const ex = earthObj.mesh.position.x;
@@ -486,6 +558,8 @@ const SolarSystem = () => {
         controls.minPolarAngle = 0;
         controls.maxPolarAngle = Math.PI * 0.82;        // restore global limit
         resetActiveRef.current = true;
+        applyOrbit(focusedOrbit, ORBIT_DEFAULT);
+        focusedOrbit = null;
       }
 
       // ── Sync focused name to React state ──────────────────
@@ -598,6 +672,10 @@ const SolarSystem = () => {
 
         if (data) {
           setSelectedPlanet(data);
+          // Highlight focused planet's orbit ring
+          applyOrbit(focusedOrbit, ORBIT_DEFAULT);
+          focusedOrbit = isSunHit ? null : isMoonHit ? moonOrbitRing : obj?.orbitLine || null;
+          applyOrbit(focusedOrbit, ORBIT_FOCUS);
           // Start zoom-in to the clicked body
           focusedRef.current    = { mesh: hitMesh, size: sz, name: data.name };
           focusTransRef.current = true;
@@ -621,6 +699,11 @@ const SolarSystem = () => {
           hoveredRef.current.material.emissive.setHex(0x000000);
         hoveredRef.current = null;
       }
+      // Restore hovered orbit unless it's the focused one
+      if (hoveredOrbit && hoveredOrbit !== focusedOrbit) {
+        applyOrbit(hoveredOrbit, ORBIT_DEFAULT);
+      }
+      hoveredOrbit = null;
 
       if (hits.length > 0) {
         const hitMesh = hits[0].object;
@@ -634,6 +717,12 @@ const SolarSystem = () => {
           hoveredRef.current = hitMesh;
           if (hitMesh.material.emissive)
             hitMesh.material.emissive.setHex(0x222233);
+          // Highlight orbit if not already focused
+          const hoverOrbit = isMoon ? moonOrbitRing : obj?.orbitLine || null;
+          if (hoverOrbit && hoverOrbit !== focusedOrbit) {
+            applyOrbit(hoverOrbit, ORBIT_HOVER);
+            hoveredOrbit = hoverOrbit;
+          }
           setTooltip({ name: data.name, x: e.clientX, y: e.clientY });
           return;
         }
@@ -675,6 +764,8 @@ const SolarSystem = () => {
       controls.dispose();
       scene.background = null;
       skyTex.dispose();
+      beltGeo.dispose();
+      beltMat.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
