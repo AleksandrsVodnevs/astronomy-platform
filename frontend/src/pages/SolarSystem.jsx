@@ -471,29 +471,7 @@ const SolarSystem = () => {
 
     let moonAngle = Math.PI * 0.7;  // stagger from Earth's starting position
 
-    // ── Asteroid belt (r 35–46, between Mars r=31 and Jupiter r=50) ─
-    const BELT_COUNT = 2500;
-    const beltPos = new Float32Array(BELT_COUNT * 3);
-    for (let i = 0; i < BELT_COUNT; i++) {
-      const angle  = Math.random() * Math.PI * 2;
-      const radius = 35 + Math.random() * 11;
-      beltPos[i * 3]     = Math.cos(angle) * radius;
-      beltPos[i * 3 + 1] = (Math.random() - 0.5) * 2.5;
-      beltPos[i * 3 + 2] = Math.sin(angle) * radius;
-    }
-    const beltGeo = new THREE.BufferGeometry();
-    beltGeo.setAttribute('position', new THREE.BufferAttribute(beltPos, 3));
-    const beltMat = new THREE.PointsMaterial({
-      color: 0xaaaaaa,
-      size: 0.18,
-      sizeAttenuation: true,
-      transparent: true,
-      opacity: 0.75,
-    });
-    const beltPoints = new THREE.Points(beltGeo, beltMat);
-    scene.add(beltPoints);
-
-    // ── Orbit highlight helpers ────────────────────────────
+// ── Orbit highlight helpers ────────────────────────────
     let hoveredOrbit = null;
     let focusedOrbit = null;
     const ORBIT_DEFAULT = { hex: 0x1e3a5f, op: 0.5 };
@@ -517,7 +495,7 @@ const SolarSystem = () => {
     // ── Animation loop ─────────────────────────────────────
     const animate = () => {
       animFrameRef.current = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
+      const delta = Math.min(clock.getDelta(), 0.05);
       const s = speedRef.current;
 
       // Planets orbit + self-rotate
@@ -532,8 +510,6 @@ const SolarSystem = () => {
           p.cloud.rotation.y += 0.55 * 0.5 * delta * Math.max(s, 0.1);
         }
       });
-
-      beltPoints.rotation.y += 0.008 * BASE_SPEED * delta * Math.max(s, 0.1);
 
       // Moon orbits Earth; tidal lock keeps same face toward Earth
       moonAngle += 2.0 * BASE_SPEED * delta * s;
@@ -598,8 +574,9 @@ const SolarSystem = () => {
           camera.lookAt(pos);
           controls.target.copy(pos);
 
-          // Close enough? — end transition and hand control back
-          if (camera.position.distanceTo(desired) < Math.max(size * 0.15, 0.3)) {
+          // Close enough or timed out? — end transition and hand control back
+          const elapsed = (performance.now() - focusedRef.current.transStart) / 1000;
+          if (camera.position.distanceTo(desired) < Math.max(size * 0.15, 0.3) || elapsed > 1.5) {
             focusTransRef.current = false;
             camera.position.copy(desired);
             controls.target.copy(pos);
@@ -677,7 +654,7 @@ const SolarSystem = () => {
           focusedOrbit = isSunHit ? null : isMoonHit ? moonOrbitRing : obj?.orbitLine || null;
           applyOrbit(focusedOrbit, ORBIT_FOCUS);
           // Start zoom-in to the clicked body
-          focusedRef.current    = { mesh: hitMesh, size: sz, name: data.name };
+          focusedRef.current    = { mesh: hitMesh, size: sz, name: data.name, transStart: performance.now() };
           focusTransRef.current = true;
           zoomTargetRef.current = null;          // cancel any pending zoom
           return;
@@ -764,8 +741,7 @@ const SolarSystem = () => {
       controls.dispose();
       scene.background = null;
       skyTex.dispose();
-      beltGeo.dispose();
-      beltMat.dispose();
+
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
