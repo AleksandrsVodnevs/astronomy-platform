@@ -1,0 +1,26 @@
+.public-profile-container { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; padding-top: 2rem; padding-bottom: 3rem; align-items: start; }
+.public-profile-sidebar { position: sticky; top: 80px; }
+.public-profile-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.7rem; padding: 1.8rem 1.4rem; }
+.public-avatar-wrap { margin-bottom: 0.3rem; }
+.public-name { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+.public-bio { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; text-align: center; margin-top: 0.3rem; }
+.public-meta-list { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.5rem; }
+.public-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.83rem; color: var(--text-muted); }
+.public-meta-item svg { flex-shrink: 0; }
+.public-meta-item a { color: var(--accent); text-decoration: none; word-break: break-all; }
+.public-meta-item a:hover { text-decoration: underline; }
+.public-interests { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 0.3rem; }
+.interest-tag { background: rgba(79,142,247,0.1); color: var(--accent); border: 1px solid rgba(79,142,247,0.2); border-radius: 20px; padding: 0.15rem 0.65rem; font-size: 0.76rem; }
+.public-posts-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+.public-posts-count { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 0.1rem 0.6rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+.public-posts-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.public-post-card { text-decoration: none; transition: border-color 0.2s ease; padding: 0; overflow: hidden; }
+.public-post-card:hover { border-color: var(--accent); }
+.public-post-image { width: 100%; height: 160px; overflow: hidden; }
+.public-post-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+.public-post-card:hover .public-post-image img { transform: scale(1.03); }
+.public-post-body { padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.public-post-body h3 { font-size: 0.97rem; font-weight: 600; color: var(--text-primary); }
+.public-post-body p { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; }
+.public-post-time { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.2rem; }
+@media (max-width: 768px) { .public-profile-container { grid-template-columns: 1fr; } .public-profile-sidebar { position: static; } }

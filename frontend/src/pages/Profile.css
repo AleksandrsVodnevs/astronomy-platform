@@ -1,0 +1,44 @@
+.profile-avatar-card { padding: 1.5rem; margin-bottom: 1.2rem; }
+.profile-avatar-section { display: flex; align-items: center; gap: 1.5rem; }
+.profile-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.avatar-upload-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+.avatar-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+.avatar-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.profile-info { display: flex; flex-direction: column; gap: 0.4rem; }
+.profile-name { font-size: 1.2rem; font-weight: 700; }
+.profile-email { font-size: 0.85rem; color: var(--text-muted); }
+.profile-section-card { margin-bottom: 1.2rem; }
+.profile-section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+@media (max-width: 480px) { .profile-avatar-section { flex-direction: column; align-items: flex-start; } }
+
+.danger-zone-card { border-color: rgba(239, 68, 68, 0.25) !important; }
+.danger-zone-title { color: var(--error) !important; }
+
+.danger-zone-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.delete-confirm-box {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  padding: 1.2rem;
+}
+
+.delete-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  color: var(--error);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.delete-warning svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}

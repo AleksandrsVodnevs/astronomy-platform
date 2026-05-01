@@ -23,6 +23,10 @@ const Post = sequelize.define('Post', {
     type: DataTypes.ENUM('draft', 'published'),
     defaultValue: 'published',
   },
+  imageUrl: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
   authorId: {
     type: DataTypes.INTEGER,
     allowNull: false,

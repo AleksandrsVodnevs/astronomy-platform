@@ -15,6 +15,10 @@ const News = sequelize.define('News', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  imageUrl: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
   sourceUrl: {
     type: DataTypes.STRING(300),
     allowNull: true,

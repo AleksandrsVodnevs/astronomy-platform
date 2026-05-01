@@ -81,3 +81,14 @@
   outline: none;
   border-color: var(--accent);
 }
+
+.admin-md-hint {
+  background: rgba(79, 142, 247, 0.08);
+  border: 1px solid rgba(79, 142, 247, 0.2);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+  font-family: monospace;
+}

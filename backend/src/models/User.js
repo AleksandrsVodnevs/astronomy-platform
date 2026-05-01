@@ -33,6 +33,26 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('active', 'blocked'),
     defaultValue: 'active',
   },
+  avatar: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  bio: {
+    type: DataTypes.STRING(300),
+    allowNull: true,
+  },
+  location: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  website: {
+    type: DataTypes.STRING(200),
+    allowNull: true,
+  },
+  interests: {
+    type: DataTypes.STRING(200),
+    allowNull: true,
+  },
 }, {
   tableName: 'users',
   timestamps: true,
